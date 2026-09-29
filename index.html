@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloom Card — Photocard chính hãng</title>
+  <meta name="description" content="Shop photocard: ảnh thật, bọc sleeve cẩn thận, nhắn tin Messenger để đặt mua." />
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <meta name="theme-color" content="#c54474" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="fonts/coiny-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/coiny-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header" id="header">
+    <div class="header__pill">
+      <a href="#" class="logo" aria-label="BloomCard - về đầu trang">
+        <img class="logo__mark" src="images/favicon.svg" alt="" width="30" height="30" /> Bloom<em>Card</em>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="#products">Sản phẩm</a>
+        <a href="#policy">Cam kết</a>
+        <a href="#order">Đặt hàng</a>
+        <a href="#feedback">Feedback</a>
+        <a href="#faq">Hỏi đáp</a>
+      </nav>
+      <a href="#products" class="header__buy">Mua ngay</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <span class="tag">✿ New drop · Số lượng có hạn</span>
+        <h1>Card xinh,<br /><em>giữ trọn</em><br /><span class="nowrap">khoảnh khắc</span></h1>
+        <p>Card xinh bọc sleeve + toploader cẩn thận trước khi gửi. Nhắn tin Messenger là chốt đơn liền.</p>
+        <div class="hero__actions">
+          <a href="#products" class="btn-hero">
+            <span>Xem sản phẩm</span>
+          </a>
+        </div>
+        <ul class="hero__stats">
+          <li><strong>100%</strong><span>Ảnh thật</span></li>
+          <li><strong>24h</strong><span>Đóng gói</span></li>
+          <li><strong>COD</strong><span>Toàn quốc</span></li>
+        </ul>
+      </div>
+      <div class="hero__visual">
+        <div class="blob blob--mint"></div>
+        <div class="blob blob--pink"></div>
+        <div class="card-float">
+          <div class="card-3d" id="heroCard">
+            <img src="images/card-sample.svg" alt="Card mẫu BloomCard" />
+            <div class="card-3d__shine"></div>
+          </div>
+        </div>
+        <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Moodboard palette strip ===== -->
+  <div class="palette" aria-hidden="true">
+    <span style="--c: var(--green)"></span>
+    <span style="--c: var(--mint)"></span>
+    <span style="--c: var(--blush)"></span>
+    <span style="--c: var(--rose)"></span>
+    <span style="--c: var(--berry)"></span>
+  </div>
+
+  <!-- ===== Products ===== -->
+  <section class="section section--mint" id="products">
+    <div class="container">
+      <div class="section__head">
+        <span class="tag">Bộ sưu tập</span>
+        <h2>Card đang có sẵn</h2>
+        <p>Bấm vào card để xem ảnh thật. Nút “Mua ngay” sẽ mở Messenger của shop.</p>
+      </div>
+      <!-- Bộ lọc -->
+      <div class="filters" id="filters">
+        <div class="filters__row">
+          <label class="search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="filterSearch" placeholder="Tìm card…" autocomplete="off" />
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="filterStock" />
+            <span class="switch__track"></span>
+            Còn hàng
+          </label>
+        </div>
+        <p class="filters__count" id="filterCount"></p>
+      </div>
+
+      <div class="products" id="productGrid">
+        <!-- Sản phẩm được render từ js/products.js -->
+      </div>
+      <!-- Thanh điều khiển: chỉ hiện trên điện thoại / iPad -->
+      <div class="empty" id="emptyState" hidden>
+        <p class="msg-code">Không tìm thấy card phù hợp</p>
+      </div>
+      <div class="products-bar">
+        <div class="products-progress"><span id="productsProgress"></span></div>
+        <button type="button" class="btn btn--ghost btn--small" id="toggleView">Xem tất cả</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Policy ===== -->
+  <section class="section section--blush" id="policy">
+    <div class="container">
+      <div class="section__head">
+        <span class="tag tag--pink">Yên tâm mua sắm</span>
+        <h2>Cam kết của shop</h2>
+      </div>
+      <div class="features">
+        <div class="feature" style="--i: 0">
+          <div class="feature__icon" style="--icon-bg: var(--mint); --icon-fg: #2f8a78"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.3l1.4-2h5.6l1.4 2h1.3A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.6"/><path d="M17 9h.01" stroke-width="2.6"/></svg></div>
+          <h3>Ảnh thật 100%</h3>
+          <p>Mỗi card đều được chụp thật tại shop, tình trạng rõ ràng.</p>
+        </div>
+        <div class="feature" style="--i: 1">
+          <div class="feature__icon" style="--icon-bg: var(--blush); --icon-fg: #c54474"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M12 9v11M3.5 13h17"/><path d="M12 9c-1.5-3.5-5.5-4-5.5-1.5C6.5 9 9 9 12 9zM12 9c1.5-3.5 5.5-4 5.5-1.5C17.5 9 15 9 12 9z"/></svg></div>
+          <h3>Đóng gói kỹ</h3>
+          <p>Sleeve + toploader + hộp cứng, chống cong gãy khi vận chuyển.</p>
+        </div>
+        <div class="feature" style="--i: 2">
+          <div class="feature__icon" style="--icon-bg: var(--green); --icon-fg: #4c8f52"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div>
+          <h3>Ship toàn quốc</h3>
+          <p>Hỗ trợ COD, kiểm tra hàng trước khi thanh toán.</p>
+        </div>
+        <div class="feature" style="--i: 3">
+          <div class="feature__icon" style="--icon-bg: var(--rose); --icon-fg: #a3345c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.8 7.8 0 0 1-8.3 7.7 8.5 8.5 0 0 1-3.3-.7L4 19.5l1.4-3.8A7.4 7.4 0 0 1 4 11.5 7.8 7.8 0 0 1 12 3.8a7.8 7.8 0 0 1 8 7.7z"/><path d="M9.5 10.5c0-1.1.9-1.7 1.8-1.2l.7.4.7-.4c.9-.5 1.8.1 1.8 1.2 0 1.4-2.5 2.9-2.5 2.9s-2.5-1.5-2.5-2.9z" fill="currentColor" stroke="none"/></svg></div>
+          <h3>Tư vấn nhanh</h3>
+          <p>Nhắn tin Messenger, shop phản hồi trong ngày.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== How to order ===== -->
+  <section class="section" id="order">
+    <div class="container">
+      <div class="section__head">
+        <span class="tag tag--pink">3 bước</span>
+        <h2>Cách đặt hàng</h2>
+      </div>
+      <ol class="steps">
+        <li class="step" style="--i: 0; --c: #c54474">
+          <div class="step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 15.5c1-1.4 2-2 3-2s2 .6 3 2"/><circle cx="12" cy="9.5" r="2"/></svg><span class="step__badge">1</span></div>
+          <div class="step__body">
+            <span class="step__label">Bước 01</span>
+            <h3>Chọn card</h3>
+            <p>Lướt bộ sưu tập, bấm <b>“Mua ngay”</b> trên card bạn thích.</p>
+          </div>
+        </li>
+        <li class="step" style="--i: 1; --c: #2fa08c">
+          <div class="step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.3 9 9 0 0 1-3.6-.8L3 20.5l1.6-4.3A8 8 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3.2a8.4 8.4 0 0 1 9 8.3z"/><path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" stroke-width="2.6"/></svg><span class="step__badge">2</span></div>
+          <div class="step__body">
+            <span class="step__label">Bước 02</span>
+            <h3>Nhắn Messenger</h3>
+            <p>Tin nhắn đặt hàng đã được sao chép sẵn — chỉ cần <b>dán &amp; gửi</b>.</p>
+          </div>
+        </li>
+        <li class="step" style="--i: 2; --c: #8a6fd1">
+          <div class="step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/><path d="m7.5 5.5 9 5"/></svg><span class="step__badge">3</span></div>
+          <div class="step__body">
+            <span class="step__label">Bước 03</span>
+            <h3>Nhận hàng</h3>
+            <p>Shop xác nhận, đóng gói kỹ và <b>gửi đi trong 24h</b>.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== Feedback ===== -->
+  <section class="section section--feedback" id="feedback">
+    <div class="container">
+      <div class="section__head">
+        <span class="tag tag--pink">Khách nói gì</span>
+        <h2>Feedback từ khách</h2>
+      </div>
+    </div>
+    <div class="glide" id="glide" aria-label="Ảnh feedback của khách">
+      <div class="glide__stage" id="glideStage"></div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="section section--faq" id="faq">
+    <div class="container faq-wrap">
+      <div class="faq-intro">
+        <span class="tag">Hỏi đáp</span>
+        <h2>Câu hỏi thường gặp</h2>
+      </div>
+
+      <div class="faq-list" id="faqList">
+        <div class="qa is-open">
+          <button type="button" class="qa__q" aria-expanded="true">
+            <span class="qa__num">01</span>
+            <span class="qa__text">Card có phải hàng chính hãng không?</span>
+            <span class="qa__icon" aria-hidden="true"></span>
+          </button>
+          <div class="qa__a"><div><p>Shop chỉ bán card chính hãng, có ảnh thật từng card. Bạn có thể nhắn tin để xin thêm ảnh hoặc video chi tiết trước khi mua.</p></div></div>
+        </div>
+        <div class="qa">
+          <button type="button" class="qa__q" aria-expanded="false">
+            <span class="qa__num">02</span>
+            <span class="qa__text">Phí ship bao nhiêu?</span>
+            <span class="qa__icon" aria-hidden="true"></span>
+          </button>
+          <div class="qa__a"><div><p>Phí ship tuỳ khu vực, shop sẽ báo chính xác khi bạn nhắn tin đặt hàng.</p></div></div>
+        </div>
+        <div class="qa">
+          <button type="button" class="qa__q" aria-expanded="false">
+            <span class="qa__num">03</span>
+            <span class="qa__text">Có được giữ card không?</span>
+            <span class="qa__icon" aria-hidden="true"></span>
+          </button>
+          <div class="qa__a"><div><p>Shop hỗ trợ giữ card trong 24h sau khi bạn xác nhận đơn qua Messenger.</p></div></div>
+        </div>
+        <div class="qa">
+          <button type="button" class="qa__q" aria-expanded="false">
+            <span class="qa__num">04</span>
+            <span class="qa__text">Thanh toán thế nào?</span>
+            <span class="qa__icon" aria-hidden="true"></span>
+          </button>
+          <div class="qa__a"><div><p>Chuyển khoản hoặc COD (thanh toán khi nhận hàng) đều được nha.</p></div></div>
+        </div>
+      </div>
+
+      <div class="faq-help">
+        <div class="faq-help__icon">💬</div>
+        <div>
+          <h3>Vẫn còn thắc mắc?</h3>
+          <p>Shop trả lời trong ngày qua Messenger.</p>
+        </div>
+        <a href="#" class="faq-help__btn js-buy">Nhắn shop</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a href="#" class="logo"><img class="logo__mark" src="images/favicon.svg" alt="" width="30" height="30" /> Bloom<em>Card</em></a>
+      <p>© <span id="year"></span> BloomCard · Photocard shop</p>
+    </div>
+  </footer>
+
+  <!-- Nút Messenger nổi -->
+  <a href="#" class="float-mess js-buy" aria-label="Nhắn tin Messenger">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78a.8.8 0 0 0 1.12.71l1.98-.87c.17-.08.36-.09.54-.05.91.25 1.87.38 2.9.38 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75c.21.16.51.16.72 0l3.16-2.4c.42-.32.97.18.69.63z"/></svg>
+  </a>
+
+  <!-- Toast + Lightbox -->
+  <div class="toast" id="toast"></div>
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox__close" id="lightboxClose" aria-label="Đóng">×</button>
+    <img id="lightboxImg" src="" alt="" />
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/feedback.js"></script>
+  <script src="js/vendor/supabase.js"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/glide.js"></script>
+</body>
+</html>

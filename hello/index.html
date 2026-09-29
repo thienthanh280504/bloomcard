@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Quản trị — BloomCard</title>
+  <link rel="icon" href="../images/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/admin.css?v=1790676706" />
+</head>
+<body>
+<!-- ===== Đăng nhập ===== -->
+<div class="login" id="login">
+  <form class="login__box" id="loginForm" autocomplete="on">
+    <img src="../images/favicon.svg" alt="" width="52" height="52" class="login__logo" />
+    <h1>Bloom<em>Card</em></h1>
+    <p class="login__sub">Đăng nhập trang quản trị</p>
+    <label class="field">
+      <span>Email</span>
+      <input type="email" id="loginEmail" name="email" autocomplete="username" autocapitalize="off" spellcheck="false" required />
+    </label>
+    <label class="field">
+      <span>Mật khẩu</span>
+      <div class="pw">
+        <input type="password" id="loginPass" name="password" autocomplete="current-password" required />
+        <button type="button" class="pw__toggle" id="pwToggle" aria-label="Hiện mật khẩu">Hiện</button>
+      </div>
+    </label>
+    <p class="login__err" id="loginErr" hidden>Sai email hoặc mật khẩu</p>
+    <button type="submit" class="btn btn--block login__btn">Đăng nhập</button>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+
+  <!-- ===== Thanh chức năng bên trái ===== -->
+  <aside class="side">
+    <a href="../index.html" class="brand" target="_blank" rel="noopener">
+      <img src="../images/favicon.svg" alt="" width="36" height="36" />
+      <span>Bloom<em>Card</em><small>Quản lý shop</small></span>
+    </a>
+
+    <nav class="menu" role="tablist">
+      <button type="button" class="menu__item is-active" data-view="products">
+        <span>Sản phẩm</span>
+      </button>
+      <button type="button" class="menu__item" data-view="feedback">
+        <span>Feedback</span>
+      </button>
+      <button type="button" class="menu__item" data-view="trash">
+        <span>Đã xoá</span><b class="menu__badge" id="trashBadge" hidden>0</b>
+      </button>
+    </nav>
+
+    <div class="side__foot">
+      <div class="account">
+        <span class="account__avatar" id="accAvatar">A</span>
+        <div class="account__info"><b id="accEmail"></b><small>Quản trị viên</small></div>
+        <button type="button" class="account__out" data-logout aria-label="Đăng xuất" title="Đăng xuất"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- Thanh trên cho điện thoại -->
+    <div class="mtop">
+      <a href="../index.html" class="brand" target="_blank" rel="noopener"><img src="../images/favicon.svg" alt="" width="30" height="30" /><span>Bloom<em>Card</em></span></a>
+      <button type="button" class="mtop__out" data-logout aria-label="Đăng xuất" title="Đăng xuất"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+    </div>
+
+    <div class="state-box" id="appLoading" hidden><span class="spinner"></span>Đang tải dữ liệu…</div>
+    <div class="state-box state-box--err" id="appError" hidden>
+      <p id="appErrorText"></p>
+      <button type="button" class="btn btn--sm" id="btnRetry">Thử lại</button>
+    </div>
+
+    <!-- =====================================================
+         SẢN PHẨM
+         ===================================================== -->
+    <section class="view is-active" id="view-products">
+      <header class="vhead">
+        <div><h1>Sản phẩm</h1><p class="muted" id="pSummary"></p></div>
+        <button type="button" class="btn" id="btnAddProduct">+ Thêm sản phẩm</button>
+      </header>
+      <div class="toolbar">
+        <label class="search">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="pSearch" placeholder="Tìm card…" />
+        </label>
+      </div>
+      <div class="plist" id="productList"></div>
+      <p class="empty msg-code" id="productEmpty" hidden>Chưa có sản phẩm nào.</p>
+    </section>
+
+    <!-- =====================================================
+         FEEDBACK
+         ===================================================== -->
+    <section class="view" id="view-feedback">
+      <header class="vhead">
+        <div><h1>Feedback</h1><p class="muted" id="fSummary"></p></div>
+      </header>
+      <label class="drop" id="fbDrop">
+        <input type="file" id="fbInput" accept="image/*" multiple hidden />
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg>
+        <b>Bấm hoặc kéo ảnh feedback vào đây</b>
+        <span>Chọn được nhiều ảnh cùng lúc · nên cắt 1 đoạn tin nhắn</span>
+      </label>
+      <div class="fgrid" id="fbList"></div>
+      <p class="empty msg-code" id="fbEmpty" hidden>Chưa có ảnh feedback nào.</p>
+    </section>
+
+    <!-- =====================================================
+         ĐÃ XOÁ (hoàn tác)
+         ===================================================== -->
+    <section class="view" id="view-trash">
+      <header class="vhead">
+        <div><h1>Đã xoá</h1><p class="muted" id="tSummary"></p></div>
+        <button type="button" class="btn btn--ghost" id="btnEmptyTrash">Dọn sạch</button>
+      </header>
+      <div class="tlist" id="trashList"></div>
+      <div class="tempty" id="trashEmpty" hidden>
+        <p class="msg-code">Chưa có gì bị xoá</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== Form sản phẩm ===== -->
+<div class="modal" id="pModal" aria-hidden="true">
+  <form class="sheet" id="pForm" autocomplete="off">
+    <div class="sheet__head"><h2 id="pFormTitle">Thêm sản phẩm</h2><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
+    <div class="form">
+      <div class="form__img">
+        <label class="imgpick">
+          <input type="file" id="pImgInput" accept="image/*" hidden />
+          <img id="pImgPreview" alt="" hidden />
+          <span class="imgpick__hint" id="pImgHint">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>
+            Bấm để chọn ảnh card
+          </span>
+        </label>
+        <small>Ảnh dọc sẽ đẹp nhất</small>
+      </div>
+      <div class="fields">
+        <label class="field"><span>Tên card *</span><input type="text" id="fName" required placeholder="VD: Photocard — Black Suit ver." /></label>
+        <div class="row">
+          <label class="field"><span>Giá *</span><div class="money"><input type="text" id="fPrice" required inputmode="numeric" autocomplete="off" placeholder="VD: 150.000" /><em>đ</em></div></label>
+          <label class="field"><span>Số lượng</span><input type="number" id="fStock" min="0" value="1" inputmode="numeric" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>Tình trạng</span><select id="fStatus"><option value="available">Còn hàng</option><option value="sold">Đã bán</option></select></label>
+          <label class="field"><span>Nhãn</span><input type="text" id="fBadge" list="badgeList" placeholder="Hot, New, Sale…" maxlength="12" />
+            <datalist id="badgeList"><option value="Hot"><option value="New"><option value="Sale"><option value="Limited"></datalist></label>
+        </div>
+      </div>
+    </div>
+    <div class="sheet__foot"><span class="grow"></span><button type="button" class="btn btn--ghost" data-close>Huỷ</button><button type="submit" class="btn">Lưu sản phẩm</button></div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../js/products.js"></script>
+<script src="../js/feedback.js"></script>
+<script src="../js/vendor/supabase.js"></script>
+<script src="../js/supabase-config.js"></script>
+<script>window.ASSET_BASE = "../";</script>
+<script src="../js/admin.js?v=1790676706"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 860" width="550" height="860">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#d8f3eb"/>
+      <stop offset="0.55" stop-color="#c6ede3"/>
+      <stop offset="1" stop-color="#f9d6d6"/>
+    </linearGradient>
+    <radialGradient id="petal" cx="0.5" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fbe3e6"/>
+      <stop offset="0.6" stop-color="#f3a9bd"/>
+      <stop offset="1" stop-color="#e17b9c"/>
+    </radialGradient>
+    <radialGradient id="petalIn" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#fdf0f1"/>
+      <stop offset="1" stop-color="#eb94ad"/>
+    </radialGradient>
+    <radialGradient id="heart" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#d8eeb0"/>
+      <stop offset="1" stop-color="#9ed2a0"/>
+    </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.6" fill="#ffffff" opacity=".55"/>
+    </pattern>
+    <clipPath id="round"><rect width="550" height="860" rx="36"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="550" height="860" fill="url(#bg)"/>
+    <rect width="550" height="860" fill="url(#dots)"/>
+
+    <!-- vòng tròn trang trí -->
+    <circle cx="470" cy="120" r="120" fill="#f9d6d6" opacity=".7"/>
+    <circle cx="70" cy="690" r="150" fill="#9ed2a0" opacity=".28"/>
+
+    <!-- thân + lá -->
+    <path d="M150 640 C 190 560, 230 500, 262 430" stroke="#8cc592" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <path d="M190 560 C 120 540, 90 580, 80 620 C 130 625, 170 600, 190 560 Z" fill="#9ed2a0"/>
+    <path d="M190 560 C 140 575, 110 595, 80 620" stroke="#7fb886" stroke-width="3" fill="none"/>
+
+    <!-- hoa mao lương (ranunculus) -->
+    <g transform="translate(290 340)">
+      <ellipse cx="0" cy="10" rx="170" ry="160" fill="url(#petal)"/>
+      <ellipse cx="-70" cy="-40" rx="110" ry="100" fill="url(#petal)" opacity=".9"/>
+      <ellipse cx="75" cy="-30" rx="105" ry="105" fill="url(#petal)" opacity=".9"/>
+      <ellipse cx="0" cy="70" rx="140" ry="95" fill="url(#petal)" opacity=".95"/>
+      <ellipse cx="0" cy="0" rx="118" ry="112" fill="url(#petalIn)"/>
+      <ellipse cx="-30" cy="-10" rx="80" ry="78" fill="url(#petal)" opacity=".85"/>
+      <ellipse cx="30" cy="10" rx="78" ry="74" fill="url(#petalIn)"/>
+      <ellipse cx="0" cy="0" rx="58" ry="55" fill="url(#petal)"/>
+      <ellipse cx="4" cy="4" rx="38" ry="36" fill="url(#petalIn)"/>
+      <circle cx="4" cy="2" r="18" fill="url(#heart)"/>
+      <!-- đường gân cánh -->
+      <g stroke="#ffffff" stroke-opacity=".55" stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M-150 30 C -120 100, -40 150, 40 150"/>
+        <path d="M-100 -110 C -40 -140, 40 -140, 110 -100"/>
+        <path d="M-95 20 C -80 70, -20 100, 50 90"/>
+        <path d="M-60 -70 C -20 -90, 30 -90, 70 -60"/>
+        <path d="M-40 30 C -25 55, 10 60, 40 45"/>
+      </g>
+    </g>
+
+    <!-- lấp lánh -->
+    <g fill="#ffffff">
+      <path d="M470 330 l6 18 18 6 -18 6 -6 18 -6 -18 -18 -6 18 -6z"/>
+      <path d="M90 170 l4 12 12 4 -12 4 -4 12 -4 -12 -12 -4 12 -4z" opacity=".9"/>
+      <path d="M430 560 l3 9 9 3 -9 3 -3 9 -3 -9 -9 -3 9 -3z" opacity=".85"/>
+    </g>
+
+    <!-- chữ -->
+    <text x="46" y="80" font-family="'Playfair Display', Georgia, serif" font-size="30" font-weight="700" fill="#3d2a33">Bloom<tspan fill="#c54474" font-style="italic">Card</tspan></text>
+
+  </g>
+</svg>
