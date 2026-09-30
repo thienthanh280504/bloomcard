@@ -174,13 +174,13 @@
 
       if (p) {
         if (p.images && p.images[0]) {
-          currentItems.push({ type: "image", src: p.images[0], label: "Ảnh 1 (Mặt trước)" });
+          currentItems.push({ type: "image", src: p.images[0], label: "Ảnh 1" });
         }
         if (p.image2) {
-          currentItems.push({ type: "image", src: p.image2, label: "Ảnh 2 (Mặt sau)" });
+          currentItems.push({ type: "image", src: p.image2, label: "Ảnh 2" });
         }
         if (p.video) {
-          currentItems.push({ type: "video", src: p.video, label: "▶ Video check" });
+          currentItems.push({ type: "video", src: p.video, label: "▶ Video" });
         }
         if (title) title.textContent = p.name || "";
         if (price) price.textContent = formatPrice(p.price || 0);
