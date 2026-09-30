@@ -381,7 +381,7 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
 }
 .setting-info {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   flex: 1;
   min-width: 0;
@@ -396,10 +396,10 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
   background: var(--accent-weak); color: var(--accent);
 }
 .setting-info h3 {
-  font-size: 14px; font-weight: 600; margin-bottom: 3px;
+  font-size: 14px; font-weight: 600; margin: 0;
 }
 .setting-info p {
-  font-size: 13px; color: var(--text-2); line-height: 1.5;
+  font-size: 13px; color: var(--text-2); line-height: 1.5; margin-top: 3px;
 }
 .setting-status {
   display: flex;
