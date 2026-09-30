@@ -1,0 +1,272 @@
+/* Font tiêu đề: Coiny (tự host, có tiếng Việt) */
+@font-face { font-family: "Coiny"; font-weight: 400; font-style: normal; font-display: swap;
+  src: url("../fonts/coiny-vietnamese.woff2") format("woff2");
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: "Coiny"; font-weight: 400; font-style: normal; font-display: swap;
+  src: url("../fonts/coiny-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+
+/* =========================================================
+   BloomCard — Trang bảo trì
+   Thiết kế: dark glassmorphism, hoa rơi, hiệu ứng phát sáng
+   ========================================================= */
+:root {
+  --berry: #c54474;
+  --berry-dark: #a3345c;
+  --rose: #d8a0ae;
+  --blush: #f9d6d6;
+  --mint: #c6ede3;
+  --green: #9ed2a0;
+  --bg-dark: #110a0e;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --font-display: "Coiny", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 120%, rgba(197,68,116,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 20% 0%, rgba(158,210,160,.08) 0%, transparent 50%);
+  color: #fff;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Floating petals ===== */
+.petals {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.petal {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50% 0 50% 50%;
+  opacity: 0;
+  animation: petalFall 18s infinite ease-in-out;
+  animation-delay: calc(var(--i) * -1.8s);
+  left: calc(5% + var(--i) * 9%);
+  top: -20px;
+}
+.petal:nth-child(odd) { background: var(--berry); width: 8px; height: 8px; }
+.petal:nth-child(even) { background: var(--rose); width: 11px; height: 11px; border-radius: 0 50% 50% 50%; }
+.petal:nth-child(3n) { background: var(--mint); width: 7px; height: 7px; }
+
+@keyframes petalFall {
+  0%   { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
+  8%   { opacity: .18; }
+  50%  { transform: translateY(50vh) rotate(360deg) translateX(40px); opacity: .15; }
+  92%  { opacity: .12; }
+  100% { transform: translateY(105vh) rotate(720deg) translateX(-30px); opacity: 0; }
+}
+
+/* ===== Glow orbs ===== */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb--1 {
+  width: 340px; height: 340px;
+  background: rgba(197, 68, 116, .12);
+  top: -80px; right: -60px;
+  animation: orbFloat 10s infinite ease-in-out alternate;
+}
+.orb--2 {
+  width: 280px; height: 280px;
+  background: rgba(158, 210, 160, .08);
+  bottom: -60px; left: -40px;
+  animation: orbFloat 13s infinite ease-in-out alternate-reverse;
+}
+@keyframes orbFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -25px) scale(1.12); }
+}
+
+/* ===== Main card ===== */
+.maint {
+  position: relative; z-index: 1;
+  width: min(500px, calc(100% - 32px));
+  padding: 16px;
+  animation: cardIn .7s cubic-bezier(.22,.85,.32,1) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(24px) scale(.97); }
+}
+
+.maint__card {
+  text-align: center;
+  padding: 44px 36px 36px;
+  background: var(--bg-card);
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  border: 1px solid var(--border-glass);
+  border-radius: 28px;
+  box-shadow:
+    0 32px 64px -16px rgba(0, 0, 0, .5),
+    0 0 0 1px rgba(255, 255, 255, .04),
+    inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+/* ===== Logo ===== */
+.maint__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 22px;
+  margin-bottom: 28px;
+  transition: opacity .2s;
+}
+.maint__logo:hover { opacity: .8; }
+.maint__logo img {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+}
+.maint__logo em {
+  color: var(--rose);
+  font-style: normal;
+}
+
+/* ===== Icon ===== */
+.maint__icon {
+  position: relative;
+  width: 84px; height: 84px;
+  margin: 0 auto 24px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--berry), var(--berry-dark));
+  border-radius: 50%;
+  box-shadow:
+    0 8px 28px -6px rgba(197, 68, 116, .45),
+    0 0 0 6px rgba(197, 68, 116, .08);
+}
+.gear {
+  position: absolute;
+  width: 48px; height: 48px;
+  color: rgba(255, 255, 255, .85);
+  animation: gearSpin 10s linear infinite;
+}
+@keyframes gearSpin { to { transform: rotate(360deg); } }
+
+.wrench {
+  position: absolute;
+  color: #fff;
+  animation: wrenchBob 3s ease-in-out infinite;
+}
+@keyframes wrenchBob {
+  0%, 100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(10deg); }
+}
+
+/* ===== Heading ===== */
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 5.5vw, 34px);
+  font-weight: 400;
+  letter-spacing: .02em;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #fff 20%, var(--blush) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.maint__sub {
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, .55);
+  margin-bottom: 24px;
+}
+
+/* ===== Loading dots ===== */
+.maint__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.maint__dots span {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--berry);
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+.maint__dots span:nth-child(2) { animation-delay: .16s; }
+.maint__dots span:nth-child(3) { animation-delay: .32s; }
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(.5); opacity: .3; }
+  40%           { transform: scale(1.1); opacity: 1; }
+}
+
+/* ===== Contact ===== */
+.maint__contact {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, .06);
+}
+.maint__contact p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, .35);
+  margin-bottom: 14px;
+}
+.maint__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--berry), var(--berry-dark));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 6px 20px -6px rgba(197, 68, 116, .4);
+}
+.maint__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -6px rgba(197, 68, 116, .55);
+}
+.maint__btn:active {
+  transform: translateY(0);
+}
+.maint__btn svg {
+  flex-shrink: 0;
+}
+
+/* ===== Footer ===== */
+.maint__footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .2);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .maint__card { padding: 36px 24px 28px; border-radius: 22px; }
+  .maint__sub br { display: none; }
+  .maint__icon { width: 72px; height: 72px; }
+  .gear { width: 42px; height: 42px; }
+  .wrench { width: 24px; height: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .maint__dots span { opacity: .6; transform: none; }
+}

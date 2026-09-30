@@ -49,3 +49,24 @@ create policy "ai cung xem anh"   on storage.objects for select using (bucket_id
 create policy "admin tai anh len" on storage.objects for insert to authenticated with check (bucket_id = 'images');
 create policy "admin sua anh"     on storage.objects for update to authenticated using (bucket_id = 'images');
 create policy "admin xoa anh"     on storage.objects for delete to authenticated using (bucket_id = 'images');
+
+-- =========================================================
+-- Bảng cài đặt (bảo trì, v.v.)
+-- =========================================================
+create table if not exists site_settings (
+  key         text primary key,
+  value       text not null default '',
+  updated_at  timestamptz default now()
+);
+
+alter table site_settings enable row level security;
+
+drop policy if exists "khach xem settings"  on site_settings;
+drop policy if exists "admin settings"      on site_settings;
+
+create policy "khach xem settings"  on site_settings for select using (true);
+create policy "admin settings"      on site_settings for all to authenticated using (true) with check (true);
+
+-- Mặc định: tắt bảo trì
+insert into site_settings (key, value) values ('maintenance_mode', 'false')
+on conflict (key) do nothing;

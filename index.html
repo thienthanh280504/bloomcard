@@ -16,6 +16,21 @@
   <link rel="preload" href="fonts/coiny-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <!-- Kiểm tra chế độ bảo trì trước khi hiện trang -->
+  <style>html:not(.bc-ready){visibility:hidden}</style>
+  <script>
+  (async()=>{
+    try{
+      var u="https://ujrgjdjpkdngsqxkriam.supabase.co";
+      var k="sb_publishable_UX0fb_qDxPkmHNa58Rt8cg_8z43wnkl";
+      var r=await fetch(u+"/rest/v1/site_settings?key=eq.maintenance_mode&select=value",{headers:{apikey:k,Authorization:"Bearer "+k}});
+      var d=await r.json();
+      if(d[0]&&d[0].value==="true"){location.replace("maintenance.html");return}
+    }catch(e){}
+    document.documentElement.classList.add("bc-ready");
+  })();
+  setTimeout(function(){document.documentElement.classList.add("bc-ready")},2000);
+  </script>
 </head>
 <body>
 

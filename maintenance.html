@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloom Card — Đang bảo trì</title>
+  <meta name="description" content="BloomCard đang bảo trì, chúng tôi sẽ quay lại sớm!" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <meta name="theme-color" content="#1a0e14" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="fonts/coiny-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/coiny-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/maintenance.css" />
+</head>
+
+<body>
+
+  <!-- Floating petals -->
+  <div class="petals" aria-hidden="true">
+    <span class="petal" style="--i:0"></span>
+    <span class="petal" style="--i:1"></span>
+    <span class="petal" style="--i:2"></span>
+    <span class="petal" style="--i:3"></span>
+    <span class="petal" style="--i:4"></span>
+    <span class="petal" style="--i:5"></span>
+    <span class="petal" style="--i:6"></span>
+    <span class="petal" style="--i:7"></span>
+    <span class="petal" style="--i:8"></span>
+    <span class="petal" style="--i:9"></span>
+  </div>
+
+  <!-- Glow orbs -->
+  <div class="orb orb--1" aria-hidden="true"></div>
+  <div class="orb orb--2" aria-hidden="true"></div>
+
+  <main class="maint">
+    <div class="maint__card">
+
+      <!-- Logo -->
+      <a href="#" class="maint__logo">
+        <img src="images/favicon.svg" alt="" width="40" height="40" />
+        <span>Bloom<em>Card</em></span>
+      </a>
+
+      <!-- Animated icon -->
+      <div class="maint__icon">
+        <svg class="gear gear--outer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        <svg class="wrench" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+      </div>
+
+      <h1>ĐANG BẢO TRÌ</h1>
+      <p class="maint__sub">
+        Shop đang cập nhật hệ thống để mang đến<br>trải nghiệm tốt hơn. Vui lòng quay lại sau nhé!
+      </p>
+
+      <!-- Loading dots -->
+      <div class="maint__dots" aria-label="Đang xử lý">
+        <span></span><span></span><span></span>
+      </div>
+
+      <!-- Contact -->
+      <div class="maint__contact">
+        <p>Cần hỗ trợ? Nhắn tin cho shop qua</p>
+        <a href="#" class="maint__btn js-buy">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path
+              d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78a.8.8 0 0 0 1.12.71l1.98-.87c.17-.08.36-.09.54-.05.91.25 1.87.38 2.9.38 5.64 0 10-4.13 10-9.7C22 6.13 17.64 2 12 2zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75c.21.16.51.16.72 0l3.16-2.4c.42-.32.97.18.69.63z" />
+          </svg>
+          Messenger
+        </a>
+      </div>
+    </div>
+
+    <p class="maint__footer">© <span id="year"></span> BloomCard · Photocard shop</p>
+  </main>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+
+</html>

@@ -123,7 +123,7 @@
   /* =========================================================
      CHUYỂN MỤC
      ========================================================= */
-  const ORDER = ["products", "feedback", "trash"];
+  const ORDER = ["products", "feedback", "trash", "settings"];
   const scrollPos = {};
   let current = null;
   function go(view) {
@@ -484,6 +484,57 @@
   });
 
   /* =========================================================
+     CÀI ĐẶT — Chế độ bảo trì
+     ========================================================= */
+  let maintMode = false;
+
+  async function loadMaintenance() {
+    try {
+      const { data, error } = await sb.from("site_settings")
+        .select("value").eq("key", "maintenance_mode").maybeSingle();
+      if (!error && data) maintMode = data.value === "true";
+    } catch (e) {
+      console.warn("site_settings chưa tạo?", e);
+    }
+    updateMaintUI();
+  }
+
+  function updateMaintUI() {
+    const toggle = $("#maintToggle");
+    const status = $("#maintStatus");
+    const text = $("#maintText");
+    if (toggle) toggle.checked = maintMode;
+    if (status) status.classList.toggle("is-maint", maintMode);
+    if (text) text.textContent = maintMode
+      ? "⚠ Trang web đang bảo trì — khách không thể truy cập"
+      : "Trang web đang hoạt động bình thường";
+  }
+
+  const maintToggle = $("#maintToggle");
+  if (maintToggle) {
+    maintToggle.addEventListener("change", async (e) => {
+      const on = e.target.checked;
+      e.target.disabled = true;
+      try {
+        await run(async () => {
+          const { error } = await sb.from("site_settings")
+            .upsert({ key: "maintenance_mode", value: on ? "true" : "false", updated_at: new Date().toISOString() },
+                    { onConflict: "key" });
+          if (error) throw error;
+        });
+        maintMode = on;
+        updateMaintUI();
+        toast(on ? "Đã bật chế độ bảo trì" : "Đã tắt chế độ bảo trì");
+      } catch (err) {
+        e.target.checked = maintMode;
+        updateMaintUI();
+      } finally {
+        e.target.disabled = false;
+      }
+    });
+  }
+
+  /* =========================================================
      POPUP XOÁ + MODAL + TOAST
      ========================================================= */
   function askDelete({ title, text, img, wide, ok = "Xoá" }) {
@@ -585,6 +636,7 @@
     current = null;
     go(["feedback", "trash"].includes(start) ? start : "products");
     loadAll();
+    loadMaintenance();
   }
   function showLogin() {
     $("#app").hidden = true;
