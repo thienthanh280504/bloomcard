@@ -8,11 +8,17 @@
   const fallbackP = window.PRODUCTS || [];
   const fallbackF = window.FEEDBACKS || [];
 
-  const toProduct = (r) => ({
-    id: r.id, name: r.name, price: r.price, stock: r.stock,
-    status: r.stock <= 0 ? "sold" : r.status, badge: r.badge || "",
-    images: r.image ? [r.image] : [],
-  });
+  const toProduct = (r) => {
+    const images = [r.image, r.image2].filter(Boolean);
+    return {
+      id: r.id, name: r.name, price: r.price, stock: r.stock,
+      status: r.stock <= 0 ? "sold" : r.status, badge: r.badge || "",
+      image: r.image || "",
+      image2: r.image2 || "",
+      video: r.video || "",
+      images: images.length ? images : (r.image ? [r.image] : []),
+    };
+  };
 
   async function load() {
     if (!window.sb) throw new Error("no client");

@@ -80,6 +80,16 @@
     must(await sb.storage.from(BUCKET).upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000", upsert: false }));
     return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
   }
+  async function uploadVideo(file, folder) {
+    const ext = (file.name || "video.mp4").split(".").pop().toLowerCase() || "mp4";
+    const path = `${folder}/vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    must(await sb.storage.from(BUCKET).upload(path, file, {
+      contentType: file.type || "video/mp4",
+      cacheControl: "31536000",
+      upsert: false
+    }));
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
   async function removeImage(url) {
     const mark = `/storage/v1/object/public/${BUCKET}/`;
     if (!url || !url.includes(mark)) return;          // ảnh mẫu trong thư mục web -> không xoá
@@ -188,6 +198,8 @@
               <span class="pill ${sold ? "pill--sold" : ""}">${sold ? "Đã bán" : "Còn hàng"}</span>
               <span class="pill pill--sl">SL: ${sold ? 0 : p.stock}</span>
               ${p.badge ? `<span class="pill pill--badge">${esc(p.badge)}</span>` : ""}
+              ${p.image2 ? `<span class="pill" title="Có 2 ảnh" style="background:#ecfdf5;color:#059669">2 ảnh</span>` : ""}
+              ${p.video ? `<span class="pill" title="Có video" style="background:#fdf2f8;color:#db2777">▶ Video</span>` : ""}
             </div>
           </div>
           <div class="pitem__qty">
@@ -251,17 +263,53 @@
   });
 
   /* ---------- Form thêm / sửa ---------- */
-  let editing = null, formImage = "";
-  function setPreview(src) {
+  let editing = null, formImage = "", formImage2 = "", formVideo = "", formVideoFile = null;
+
+  function setPreview1(src) {
     formImage = src || "";
-    $("#pImgPreview").hidden = !src; $("#pImgHint").hidden = !!src;
-    if (src) $("#pImgPreview").src = asset(src);
+    const img = $("#pImgPreview"), hint = $("#pImgHint"), del = $("#btnDelImg1");
+    if (src) {
+      img.src = asset(src); img.hidden = false; hint.hidden = true;
+      if (del) del.hidden = false;
+    } else {
+      img.removeAttribute("src"); img.hidden = true; hint.hidden = false;
+      if (del) del.hidden = true;
+    }
   }
+
+  function setPreview2(src) {
+    formImage2 = src || "";
+    const img = $("#pImg2Preview"), hint = $("#pImg2Hint"), del = $("#btnDelImg2");
+    if (src) {
+      img.src = asset(src); img.hidden = false; hint.hidden = true;
+      if (del) del.hidden = false;
+    } else {
+      img.removeAttribute("src"); img.hidden = true; hint.hidden = false;
+      if (del) del.hidden = true;
+    }
+  }
+
+  function setPreviewVideo(src, file = null) {
+    formVideo = src || "";
+    formVideoFile = file;
+    const vid = $("#pVideoPreview"), hint = $("#pVideoHint"), del = $("#btnDelVideo");
+    if (src) {
+      vid.src = asset(src); vid.hidden = false; hint.hidden = true;
+      vid.play().catch(() => {});
+      if (del) del.hidden = false;
+    } else {
+      try { vid.pause(); } catch (_) {}
+      vid.removeAttribute("src"); vid.hidden = true; hint.hidden = false;
+      if (del) del.hidden = true;
+    }
+  }
+
   function moneyVal(v) { return parseInt(String(v).replace(/\D/g, ""), 10) || 0; }
   function moneyFmt(v) {
     const d = String(v ?? "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
     return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
   }
+
   function openProduct(p = null) {
     editing = p;
     $("#pFormTitle").textContent = p ? "Sửa sản phẩm" : "Thêm sản phẩm";
@@ -270,11 +318,21 @@
     $("#fStock").value = p?.stock ?? 1;
     $("#fStatus").value = p && isSold(p) ? "sold" : "available";
     $("#fBadge").value = p?.badge || "";
-    setPreview(p?.image || "");
+
+    setPreview1(p?.image || "");
+    setPreview2(p?.image2 || "");
+    setPreviewVideo(p?.video || "", null);
+
     openModal("#pModal");
     setTimeout(() => $("#fName").focus(), 50);
   }
   $("#btnAddProduct").addEventListener("click", () => openProduct(null));
+
+  // Nút xóa ảnh/video trong form
+  $("#btnDelImg1")?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setPreview1(""); });
+  $("#btnDelImg2")?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setPreview2(""); });
+  $("#btnDelVideo")?.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setPreviewVideo(""); });
+
   /* Giá: tự thêm dấu chấm hàng nghìn khi gõ (500000 -> 500.000) */
   $("#fPrice").addEventListener("input", (e) => {
     const el = e.target;
@@ -284,14 +342,37 @@
     while (pos < el.value.length && seen < digitsBefore) { if (/\d/.test(el.value[pos])) seen++; pos++; }
     el.setSelectionRange(pos, pos);
   });
+
+  // Chọn ảnh 1
   $("#pImgInput").addEventListener("change", async (e) => {
     const f = e.target.files[0]; if (!f) return;
-    try { setPreview(await readImage(f, 800)); } catch { toast("Không đọc được ảnh này"); }
+    try { setPreview1(await readImage(f, 900)); } catch { toast("Không đọc được ảnh 1"); }
     e.target.value = "";
   });
+
+  // Chọn ảnh 2
+  $("#pImg2Input")?.addEventListener("change", async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try { setPreview2(await readImage(f, 900)); } catch { toast("Không đọc được ảnh 2"); }
+    e.target.value = "";
+  });
+
+  // Chọn video
+  $("#pVideoInput")?.addEventListener("change", (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    if (f.size > 50 * 1024 * 1024) {
+      alert("⚠️ Dung lượng video tối đa là 50MB. Vui lòng nén video hoặc chọn video nhẹ hơn nhé!");
+      e.target.value = "";
+      return;
+    }
+    const blobUrl = URL.createObjectURL(f);
+    setPreviewVideo(blobUrl, f);
+    e.target.value = "";
+  });
+
   $("#pForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!formImage) { toast("Hãy chọn ảnh card"); return; }
+    if (!formImage) { toast("Hãy chọn ảnh chính (Ảnh 1) cho card"); return; }
     const btn = $("#pForm button[type=submit]");
     let stock = Math.max(0, parseInt($("#fStock").value, 10) || 0);
     if ($("#fStatus").value === "sold") stock = 0;
@@ -306,11 +387,37 @@
     try {
       await run(async () => {
         const oldImage = editing?.image;
-        if (formImage.startsWith("data:")) data.image = await uploadImage(formImage, "products");
+        const oldImage2 = editing?.image2;
+        const oldVideo = editing?.video;
+
+        // 1. Upload Ảnh 1
+        if (formImage.startsWith("data:")) {
+          data.image = await uploadImage(formImage, "products");
+        } else {
+          data.image = formImage || null;
+        }
+
+        // 2. Upload Ảnh 2
+        if (formImage2.startsWith("data:")) {
+          data.image2 = await uploadImage(formImage2, "products");
+        } else {
+          data.image2 = formImage2 || null;
+        }
+
+        // 3. Upload Video
+        if (formVideoFile) {
+          btn.textContent = "Đang tải video lên…";
+          data.video = await uploadVideo(formVideoFile, "products");
+        } else {
+          data.video = formVideo || null;
+        }
+
         if (editing) {
           const row = must(await sb.from("products").update(data).eq("id", editing.id).select().single());
           Object.assign(editing, row);
-          if (data.image && oldImage !== data.image) removeImage(oldImage);
+          if (data.image && oldImage && oldImage !== data.image) removeImage(oldImage);
+          if (oldImage2 && oldImage2 !== data.image2) removeImage(oldImage2);
+          if (oldVideo && oldVideo !== data.video) removeImage(oldVideo);
         } else {
           data.position = products.length ? Math.min(...products.map((x) => x.position || 0)) - 1 : 0;
           const row = must(await sb.from("products").insert(data).select().single());
@@ -319,7 +426,13 @@
       });
       renderProducts(); closeModals();
       toast(editing ? "Đã cập nhật sản phẩm" : "Đã thêm sản phẩm");
-    } catch (e) { /* đã báo lỗi */ }
+    } catch (err) {
+      console.error(err);
+      const msg = String(err?.message || err);
+      if (/image2|video|column/i.test(msg)) {
+        alert("⚠️ Cần tạo cột 'image2' và 'video' trong Supabase SQL Editor:\n\nALTER TABLE products ADD COLUMN IF NOT EXISTS image2 TEXT;\nALTER TABLE products ADD COLUMN IF NOT EXISTS video TEXT;\n\nChạy lệnh xong bấm Lưu lại là được nhé!");
+      }
+    }
     finally { btn.disabled = false; btn.textContent = "Lưu sản phẩm"; }
   });
 

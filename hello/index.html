@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/admin.css?v=1790676800" />
+  <link rel="stylesheet" href="../css/admin.css?v=1790678800" />
 </head>
 <body>
 <!-- ===== Đăng nhập ===== -->
@@ -186,20 +186,59 @@
 
 <!-- ===== Form sản phẩm ===== -->
 <div class="modal" id="pModal" aria-hidden="true">
-  <form class="sheet" id="pForm" autocomplete="off">
+  <form class="sheet sheet--wide" id="pForm" autocomplete="off">
     <div class="sheet__head"><h2 id="pFormTitle">Thêm sản phẩm</h2><button type="button" class="x" data-close aria-label="Đóng">×</button></div>
-    <div class="form">
-      <div class="form__img">
-        <label class="imgpick">
-          <input type="file" id="pImgInput" accept="image/*" hidden />
-          <img id="pImgPreview" alt="" hidden />
-          <span class="imgpick__hint" id="pImgHint">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>
-            Bấm để chọn ảnh card
-          </span>
-        </label>
-        <small>Ảnh dọc sẽ đẹp nhất</small>
+    <div class="form form--stacked">
+      <div class="media-row">
+        <!-- Slot 1: Ảnh 1 (Chính) -->
+        <div class="media-slot" id="slotImg1">
+          <div class="media-slot__head">
+            <span class="media-slot__label">Ảnh 1 (Mặt trước) *</span>
+            <button type="button" class="media-slot__del" id="btnDelImg1" title="Xóa ảnh 1" hidden>×</button>
+          </div>
+          <label class="imgpick" id="pickImg1">
+            <input type="file" id="pImgInput" accept="image/*" hidden />
+            <img id="pImgPreview" alt="" hidden />
+            <span class="imgpick__hint" id="pImgHint">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>
+              <span>Chọn ảnh 1</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Slot 2: Ảnh 2 (Phụ) -->
+        <div class="media-slot" id="slotImg2">
+          <div class="media-slot__head">
+            <span class="media-slot__label">Ảnh 2 (Mặt sau)</span>
+            <button type="button" class="media-slot__del" id="btnDelImg2" title="Xóa ảnh 2" hidden>×</button>
+          </div>
+          <label class="imgpick" id="pickImg2">
+            <input type="file" id="pImg2Input" accept="image/*" hidden />
+            <img id="pImg2Preview" alt="" hidden />
+            <span class="imgpick__hint" id="pImg2Hint">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              <span>Thêm ảnh 2</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Slot 3: Video -->
+        <div class="media-slot" id="slotVideo">
+          <div class="media-slot__head">
+            <span class="media-slot__label">Video cận cảnh</span>
+            <button type="button" class="media-slot__del" id="btnDelVideo" title="Xóa video" hidden>×</button>
+          </div>
+          <label class="imgpick imgpick--video" id="pickVideo">
+            <input type="file" id="pVideoInput" accept="video/mp4,video/webm,video/quicktime,video/*" hidden />
+            <video id="pVideoPreview" playsinline loop muted hidden></video>
+            <span class="imgpick__hint" id="pVideoHint">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Thêm video</span>
+            </span>
+          </label>
+        </div>
       </div>
+
       <div class="fields">
         <label class="field"><span>Tên card *</span><input type="text" id="fName" required placeholder="VD: Photocard — Black Suit ver." /></label>
         <div class="row">
@@ -224,6 +263,6 @@
 <script src="../js/vendor/supabase.js"></script>
 <script src="../js/supabase-config.js"></script>
 <script>window.ASSET_BASE = "../";</script>
-<script src="../js/admin.js?v=1790676706"></script>
+<script src="../js/admin.js?v=1790678800"></script>
 </body>
 </html>

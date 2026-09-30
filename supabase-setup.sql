@@ -10,10 +10,16 @@ create table if not exists products (
   status      text not null default 'available',
   badge       text default '',
   image       text,
+  image2      text,
+  video       text,
   position    integer not null default 0,
   deleted_at  timestamptz,
   created_at  timestamptz default now()
 );
+
+-- Tự động thêm cột image2 và video nếu bảng products đã được tạo từ trước
+alter table products add column if not exists image2 text;
+alter table products add column if not exists video text;
 
 create table if not exists feedbacks (
   id          text primary key default gen_random_uuid()::text,

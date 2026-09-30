@@ -10,7 +10,7 @@
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
   const formatPrice = (n) => n.toLocaleString("vi-VN") + "đ";
-  const findProduct = (id) => PRODUCTS.find((p) => p.id === id) || PRODUCTS[0];
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   /* ---------- Render danh sách sản phẩm ---------- */
   function renderProducts(list = PRODUCTS) {
@@ -27,17 +27,28 @@
     grid.innerHTML = sorted.map((p) => {
       const sold = p.status === "sold" || (p.stock !== undefined && p.stock <= 0);
       const stock = sold ? 0 : (p.stock ?? 1);
-      const badge = sold
-        ? `<span class="product__badge product__badge--sold">Đã bán</span>`
-        : p.badge ? `<span class="product__badge">${p.badge}</span>` : "";
+      const hasImage2 = Boolean(p.image2);
+      const hasVideo = Boolean(p.video);
+
+      const badgesHtml = `
+        <div class="product__badges">
+          ${sold
+            ? `<span class="product__badge product__badge--sold">Đã bán</span>`
+            : p.badge ? `<span class="product__badge">${esc(p.badge)}</span>` : ""}
+          ${hasVideo ? `<span class="product__badge product__badge--video" title="Có video check card"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg> Video</span>` : ""}
+          ${hasImage2 ? `<span class="product__badge product__badge--photos" title="Có 2 ảnh">2 ảnh</span>` : ""}
+        </div>
+      `;
+
       return `
         <article class="product ${sold ? "is-sold" : ""}" data-id="${p.id}">
-          <div class="product__img" data-zoom="${p.images[0]}">
-            ${badge}
-            <img src="${p.images[0]}" alt="${p.name}" loading="lazy" />
+          <div class="product__img" data-product-id="${p.id}" data-zoom="${p.images[0] || ""}">
+            ${badgesHtml}
+            <img class="img-front" src="${p.images[0] || ""}" alt="${esc(p.name)}" loading="lazy" />
+            ${hasImage2 ? `<img class="img-back" src="${p.image2}" alt="${esc(p.name)} - mặt sau" loading="lazy" />` : ""}
           </div>
           <div class="product__body">
-            <h3 class="product__name">${p.name}</h3>
+            <h3 class="product__name">${esc(p.name)}</h3>
             <div class="product__foot">
               <div class="product__row">
                 <span class="product__price">${formatPrice(p.price)}</span>
@@ -115,20 +126,130 @@
     toastTimer = setTimeout(() => el.classList.remove("is-show"), 3500);
   }
 
-  /* ---------- Lightbox ---------- */
+  /* ---------- Lightbox đa phương tiện (Ảnh 1, Ảnh 2, Video) ---------- */
   function initLightbox() {
     const lb = $("#lightbox");
+    if (!lb) return;
     const img = $("#lightboxImg");
-    const open = (src) => { img.src = src; lb.classList.add("is-open"); lb.setAttribute("aria-hidden", "false"); };
-    const close = () => { lb.classList.remove("is-open"); lb.setAttribute("aria-hidden", "true"); };
+    const vid = $("#lightboxVideo");
+    const btnPrev = $("#lightboxPrev");
+    const btnNext = $("#lightboxNext");
+    const tabs = $("#lightboxTabs");
+    const title = $("#lightboxTitle");
+    const price = $("#lightboxPrice");
+    const info = $("#lightboxInfo");
+
+    let currentItems = [];
+    let currentIndex = 0;
+
+    const showItem = (idx) => {
+      if (!currentItems.length) return;
+      currentIndex = (idx + currentItems.length) % currentItems.length;
+      const item = currentItems[currentIndex];
+
+      if (item.type === "video") {
+        img.hidden = true;
+        img.removeAttribute("src");
+        vid.src = item.src;
+        vid.hidden = false;
+        vid.play().catch(() => {});
+      } else {
+        try { vid.pause(); } catch (_) {}
+        vid.removeAttribute("src");
+        vid.hidden = true;
+        img.src = item.src;
+        img.hidden = false;
+      }
+
+      if (tabs) {
+        $$(".lightbox__tab", tabs).forEach((tb, i) => {
+          tb.classList.toggle("is-active", i === currentIndex);
+        });
+      }
+    };
+
+    const openForProduct = (prodId, fallbackSrc) => {
+      const p = PRODUCTS.find((x) => x.id === prodId);
+      currentItems = [];
+
+      if (p) {
+        if (p.images && p.images[0]) {
+          currentItems.push({ type: "image", src: p.images[0], label: "Ảnh 1 (Mặt trước)" });
+        }
+        if (p.image2) {
+          currentItems.push({ type: "image", src: p.image2, label: "Ảnh 2 (Mặt sau)" });
+        }
+        if (p.video) {
+          currentItems.push({ type: "video", src: p.video, label: "▶ Video check" });
+        }
+        if (title) title.textContent = p.name || "";
+        if (price) price.textContent = formatPrice(p.price || 0);
+        if (info) info.hidden = false;
+      } else if (fallbackSrc) {
+        currentItems.push({ type: "image", src: fallbackSrc, label: "Ảnh" });
+        if (info) info.hidden = true;
+      }
+
+      if (!currentItems.length) return;
+
+      const hasMulti = currentItems.length > 1;
+      if (btnPrev) btnPrev.hidden = !hasMulti;
+      if (btnNext) btnNext.hidden = !hasMulti;
+
+      if (tabs) {
+        tabs.hidden = !hasMulti;
+        tabs.innerHTML = hasMulti
+          ? currentItems.map((item, idx) => `
+              <button type="button" class="lightbox__tab ${idx === 0 ? "is-active" : ""}" data-idx="${idx}">
+                ${item.label}
+              </button>
+            `).join("")
+          : "";
+      }
+
+      showItem(0);
+      lb.classList.add("is-open");
+      lb.setAttribute("aria-hidden", "false");
+    };
+
+    const close = () => {
+      try { vid.pause(); } catch (_) {}
+      vid.removeAttribute("src");
+      vid.hidden = true;
+      img.removeAttribute("src");
+      lb.classList.remove("is-open");
+      lb.setAttribute("aria-hidden", "true");
+    };
 
     document.addEventListener("click", (e) => {
-      const z = e.target.closest("[data-zoom]");
-      if (z) open(z.dataset.zoom);
+      const z = e.target.closest("[data-product-id], [data-zoom]");
+      if (z) {
+        e.preventDefault();
+        openForProduct(z.dataset.productId, z.dataset.zoom);
+      }
     });
-    $("#lightboxClose").addEventListener("click", close);
-    lb.addEventListener("click", (e) => { if (e.target === lb) close(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+    btnPrev?.addEventListener("click", (e) => { e.stopPropagation(); showItem(currentIndex - 1); });
+    btnNext?.addEventListener("click", (e) => { e.stopPropagation(); showItem(currentIndex + 1); });
+
+    tabs?.addEventListener("click", (e) => {
+      const tb = e.target.closest(".lightbox__tab");
+      if (tb) {
+        e.stopPropagation();
+        showItem(parseInt(tb.dataset.idx, 10) || 0);
+      }
+    });
+
+    $("#lightboxClose")?.addEventListener("click", close);
+    lb.addEventListener("click", (e) => {
+      if (e.target === lb || e.target.classList.contains("lightbox__inner")) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (!lb.classList.contains("is-open")) return;
+      if (e.key === "Escape") close();
+      else if (e.key === "ArrowLeft") showItem(currentIndex - 1);
+      else if (e.key === "ArrowRight") showItem(currentIndex + 1);
+    });
   }
 
   /* ---------- Bộ lọc ---------- */

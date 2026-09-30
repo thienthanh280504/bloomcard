@@ -15,7 +15,7 @@
   <link rel="preload" href="fonts/coiny-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="fonts/coiny-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=1790678800" />
   <!-- Kiểm tra chế độ bảo trì trước khi hiện trang -->
   <style>html:not(.bc-ready){visibility:hidden}</style>
   <script>
@@ -285,7 +285,19 @@
   <div class="toast" id="toast"></div>
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <button class="lightbox__close" id="lightboxClose" aria-label="Đóng">×</button>
-    <img id="lightboxImg" src="" alt="" />
+    <div class="lightbox__inner">
+      <div class="lightbox__stage">
+        <button type="button" class="lightbox__nav lightbox__nav--prev" id="lightboxPrev" aria-label="Xem trước" hidden>‹</button>
+        <img id="lightboxImg" src="" alt="" />
+        <video id="lightboxVideo" controls playsinline loop hidden></video>
+        <button type="button" class="lightbox__nav lightbox__nav--next" id="lightboxNext" aria-label="Xem tiếp" hidden>›</button>
+      </div>
+      <div class="lightbox__info" id="lightboxInfo" hidden>
+        <span class="lightbox__title" id="lightboxTitle"></span>
+        <span class="lightbox__price" id="lightboxPrice"></span>
+      </div>
+      <div class="lightbox__tabs" id="lightboxTabs" hidden></div>
+    </div>
   </div>
 
   <script src="js/config.js"></script>
@@ -293,8 +305,8 @@
   <script src="js/feedback.js"></script>
   <script src="js/vendor/supabase.js"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/data.js?v=1790678200"></script>
-  <script src="js/main.js?v=1790678200"></script>
+  <script src="js/data.js?v=1790678800"></script>
+  <script src="js/main.js?v=1790678800"></script>
   <script src="js/motion.js"></script>
   <script src="js/glide.js"></script>
 </body>
