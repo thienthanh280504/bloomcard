@@ -506,7 +506,7 @@
     if (toggle) toggle.checked = maintMode;
     if (status) status.classList.toggle("is-maint", maintMode);
     if (text) text.textContent = maintMode
-      ? "⚠ Trang web đang bảo trì — khách không thể truy cập"
+      ? "Trang web đang bảo trì — khách không thể truy cập"
       : "Trang web đang hoạt động bình thường";
   }
 
