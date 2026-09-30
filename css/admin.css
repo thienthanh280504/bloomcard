@@ -248,9 +248,19 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
 .sheet--wide { width: min(620px, 100%); }
 .modal.is-open .sheet { transform: none; }
 .sheet__head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.sheet__head h2 { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
-.x { width: 32px; height: 32px; border: 0; border-radius: var(--radius); background: none; color: var(--text-3); font-size: 20px; line-height: 1; }
+.x {
+  width: 38px; height: 38px; border: 0; border-radius: var(--radius);
+  background: none; color: var(--text-2); font-size: 26px; line-height: 1;
+  display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
+  transition: background .15s, color .15s, transform .1s;
+}
+.x svg { width: 22px; height: 22px; stroke-width: 2.2; }
 .x:hover { background: var(--bg); color: var(--text); }
+.x:active { transform: scale(.92); }
+@media (max-width: 640px) {
+  .x { width: 42px; height: 42px; }
+  .x svg { width: 24px; height: 24px; }
+}
 .form { display: grid; grid-template-columns: 160px 1fr; gap: 20px; padding: 20px; }
 .form--stacked { display: grid; grid-template-columns: 1fr; gap: 18px; padding: 20px; }
 .media-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
