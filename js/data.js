@@ -22,7 +22,11 @@
     ]);
     if (p.error) throw p.error;
     if (f.error) throw f.error;
-    window.PRODUCTS = p.data.map(toProduct);
+    window.PRODUCTS = p.data.map(toProduct).sort((a, b) => {
+      const aSold = (a.status === "sold" || (a.stock !== undefined && a.stock <= 0)) ? 1 : 0;
+      const bSold = (b.status === "sold" || (b.stock !== undefined && b.stock <= 0)) ? 1 : 0;
+      return aSold - bSold;
+    });
     window.FEEDBACKS = f.data.map((r) => r.image);
   }
 

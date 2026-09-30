@@ -17,8 +17,15 @@
     const grid = $("#productGrid");
     if (!grid) return;
 
-    grid.innerHTML = list.map((p) => {
-      const sold = p.status === "sold";
+    // Đẩy sản phẩm chưa bán lên trên, sản phẩm đã bán xuống cuối
+    const sorted = [...list].sort((a, b) => {
+      const aSold = (a.status === "sold" || (a.stock !== undefined && a.stock <= 0)) ? 1 : 0;
+      const bSold = (b.status === "sold" || (b.stock !== undefined && b.stock <= 0)) ? 1 : 0;
+      return aSold - bSold;
+    });
+
+    grid.innerHTML = sorted.map((p) => {
+      const sold = p.status === "sold" || (p.stock !== undefined && p.stock <= 0);
       const stock = sold ? 0 : (p.stock ?? 1);
       const badge = sold
         ? `<span class="product__badge product__badge--sold">Đã bán</span>`
@@ -348,7 +355,11 @@
     const grid = $("#productGrid");
     if (grid) grid.classList.add("is-loading");
     await (window.DATA_READY || Promise.resolve());
-    PRODUCTS = window.PRODUCTS || [];
+    PRODUCTS = (window.PRODUCTS || []).sort((a, b) => {
+      const aSold = (a.status === "sold" || (a.stock !== undefined && a.stock <= 0)) ? 1 : 0;
+      const bSold = (b.status === "sold" || (b.stock !== undefined && b.stock <= 0)) ? 1 : 0;
+      return aSold - bSold;
+    });
     if (grid) grid.classList.remove("is-loading");
     initProductSlider();
     initFilters();
