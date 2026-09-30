@@ -90,7 +90,19 @@
     <p class="maint__footer">© <span id="year"></span> BloomCard · Photocard shop</p>
   </main>
 
-  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script>
+  // Kiểm tra chế độ bảo trì — nếu đã tắt thì chuyển về trang chủ
+  (async()=>{
+    try{
+      var u="https://ujrgjdjpkdngsqxkriam.supabase.co";
+      var k="sb_publishable_UX0fb_qDxPkmHNa58Rt8cg_8z43wnkl";
+      var r=await fetch(u+"/rest/v1/site_settings?key=eq.maintenance_mode&select=value",{headers:{apikey:k,Authorization:"Bearer "+k}});
+      var d=await r.json();
+      if(!d[0]||d[0].value!=="true"){location.replace("/")}
+    }catch(e){}
+  })();
+  document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 
 </html>
