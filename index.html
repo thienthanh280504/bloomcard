@@ -38,7 +38,7 @@
   <header class="header" id="header">
     <div class="header__pill">
       <a href="#" class="logo" aria-label="BloomCard - về đầu trang">
-        <img class="logo__mark" src="images/favicon.svg" alt="" width="30" height="30" /> Bloom<em>Card</em>
+        <img class="logo__mark" src="images/favicon.svg" alt="" width="30" height="30" /><span>Bloom<em>Card</em></span>
       </a>
       <nav class="nav" id="nav">
         <a href="#products">Sản phẩm</a>
@@ -47,7 +47,15 @@
         <a href="#feedback">Feedback</a>
         <a href="#faq">Hỏi đáp</a>
       </nav>
-      <a href="#products" class="header__buy">Mua ngay</a>
+      <a href="cart.html" class="header__buy" id="headerCartBtn" aria-label="Giỏ hàng">
+        <svg class="header__cart-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2.5 10h19"></path>
+          <path d="M4.5 10l1.6 8.2a2 2 0 0 0 2 1.8h7.8a2 2 0 0 0 2-1.8L19.5 10"></path>
+          <path d="M8.8 13.2L10.6 3.8"></path>
+          <path d="M15.2 13.2L13.4 3.8"></path>
+        </svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </a>
       <button class="menu-toggle" id="menuToggle" aria-label="Mở menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -101,7 +109,7 @@
       <div class="section__head">
         <span class="tag">Bộ sưu tập</span>
         <h2>Card đang có sẵn</h2>
-        <p>Bấm vào card để xem ảnh thật. Nút “Mua ngay” sẽ mở Messenger của shop.</p>
+        <p>Bấm vào card để xem ảnh thật. Bấm “Mua ngay” để thêm vào giỏ hàng.</p>
       </div>
       <!-- Bộ lọc -->
       <div class="filters" id="filters">
@@ -219,7 +227,7 @@
     <div class="container faq-wrap">
       <div class="faq-intro">
         <span class="tag">Hỏi đáp</span>
-        <h2>Câu hỏi thường gặp</h2>
+        <h2>Câu hỏi <span class="nowrap">thường gặp</span></h2>
       </div>
 
       <div class="faq-list" id="faqList">
@@ -253,7 +261,7 @@
             <span class="qa__text">Thanh toán thế nào?</span>
             <span class="qa__icon" aria-hidden="true"></span>
           </button>
-          <div class="qa__a"><div><p>Chuyển khoản hoặc COD (thanh toán khi nhận hàng) đều được nha.</p></div></div>
+          <div class="qa__a"><div><p>Shop nhận chuyển khoản qua mã QR ngay khi bạn đặt hàng.</p></div></div>
         </div>
       </div>
 
@@ -271,8 +279,7 @@
   <!-- ===== Footer ===== -->
   <footer class="footer">
     <div class="container footer__inner">
-      <a href="#" class="logo"><img class="logo__mark" src="images/favicon.svg" alt="" width="30" height="30" /> Bloom<em>Card</em></a>
-      <p>© <span id="year"></span> BloomCard · Photocard shop</p>
+      <p>COPYRIGHT @ 2026 BLOOMCARD</p>
     </div>
   </footer>
 
@@ -306,6 +313,7 @@
   <script src="js/vendor/supabase.js"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/data.js?v=1790678800"></script>
+  <script src="js/cart.js"></script>
   <script src="js/main.js?v=1790678800"></script>
   <script src="js/motion.js"></script>
   <script src="js/glide.js"></script>

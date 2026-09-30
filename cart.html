@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giỏ hàng — BloomCard</title>
+  <meta name="description" content="Giỏ hàng của bạn tại BloomCard - Photocard chính hãng." />
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <meta name="theme-color" content="#c54474" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="fonts/coiny-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/coiny-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=1790679200" />
+  <link rel="stylesheet" href="css/cart.css" />
+</head>
+<body class="cart-page-body">
+
+  <!-- ===== Giỏ hàng ===== -->
+  <main class="cart-section">
+    <div class="container">
+      <div class="cart-header">
+        <h1 class="cart-title">Giỏ hàng của bạn</h1>
+      </div>
+
+      <!-- Bố cục 2 cột -->
+      <div class="cart-layout" id="cartContent">
+        <!-- Cột trái: Danh sách sản phẩm -->
+        <div class="cart-items-wrap">
+          <div class="cart-items" id="cartItemsList">
+            <!-- Sản phẩm được render động từ js/cart.js -->
+          </div>
+        </div>
+
+        <!-- Cột phải: Tóm tắt đơn hàng -->
+        <div class="cart-summary-wrap">
+          <div class="cart-summary">
+            <div class="cart-summary__row">
+              <span class="cart-summary__label">Tạm tính:</span>
+              <span class="cart-summary__value" id="cartSubtotal">0đ</span>
+            </div>
+            <div class="cart-summary__divider"></div>
+            <div class="cart-summary__shipping">
+              <span class="shipping-title">Vận chuyển:</span>
+              <p class="shipping-note">Bạn sẽ thanh toán phí vận chuyển khi nhận được hàng.</p>
+            </div>
+            <div class="cart-summary__actions">
+              <a href="index.html#products" class="btn-back">Quay lại</a>
+              <button type="button" class="btn-checkout" id="btnCheckout">Thanh toán</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hiển thị khi giỏ hàng trống -->
+      <div class="cart-empty" id="cartEmpty" style="display: none;">
+        <div class="cart-empty__icon">🛍️</div>
+        <p class="cart-empty__text">Giỏ hàng của bạn đang trống</p>
+        <a href="index.html#products" class="btn btn--small">Xem sản phẩm ngay</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Modal Nhập thông tin thanh toán COD ===== -->
+  <div class="ck-modal" id="checkoutModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+    <div class="ck-modal__dialog">
+      <button type="button" class="ck-modal__close" id="checkoutClose" aria-label="Đóng">&times;</button>
+      <div class="ck-modal__head">
+        <h2 id="modalTitle">Thông tin giao hàng</h2>
+        <p>Thanh toán khi nhận hàng (COD)</p>
+      </div>
+
+      <form id="checkoutForm">
+        <div class="ck-form-group">
+          <label for="ckName">Họ và tên người nhận *</label>
+          <input type="text" id="ckName" required placeholder="Nguyễn Văn A" autocomplete="name" />
+        </div>
+        <div class="ck-form-group">
+          <label for="ckPhone">Số điện thoại nhận hàng *</label>
+          <input type="tel" id="ckPhone" required placeholder="0901 234 567" autocomplete="tel" />
+        </div>
+        <div class="ck-form-group">
+          <label for="ckAddress">Địa chỉ nhận hàng *</label>
+          <input type="text" id="ckAddress" required placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" autocomplete="street-address" />
+        </div>
+        <div class="ck-form-group">
+          <label for="ckNote">Ghi chú cho shop (không bắt buộc)</label>
+          <textarea id="ckNote" rows="2" placeholder="Ví dụ: Giao giờ hành chính, bọc kỹ giúp mình nha..."></textarea>
+        </div>
+
+        <div class="ck-review-box">
+          <div class="ck-review-row">
+            <span>Tiền hàng:</span>
+            <strong id="checkoutTotalReview">0đ</strong>
+          </div>
+          <div class="ck-review-note">
+            Bạn sẽ thanh toán phí vận chuyển khi nhận được hàng.
+          </div>
+        </div>
+
+        <div class="ck-modal__actions">
+          <button type="button" class="btn-secondary" id="checkoutCancel">Hủy</button>
+          <button type="submit" class="btn-checkout">Xác nhận đặt hàng</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Modal Đặt hàng thành công ===== -->
+  <div class="ck-modal" id="successModal" aria-hidden="true" role="dialog">
+    <div class="ck-modal__dialog">
+      <div class="ck-success">
+        <div class="ck-success__badge">✿</div>
+        <h2>Đặt hàng thành công!</h2>
+        <div class="ck-success__code" id="successCode">#BC123456</div>
+        <p>Cảm ơn bạn đã ủng hộ BloomCard! Shop sẽ liên hệ xác nhận đơn và đóng gói gửi đi trong 24h.<br /><strong>Bạn sẽ thanh toán phí vận chuyển khi nhận được hàng.</strong></p>
+        <div class="ck-success__btns">
+          <a href="#" target="_blank" class="btn-checkout" id="successMsgLink">Nhắn tin shop qua Messenger</a>
+          <a href="index.html" class="btn-secondary" style="text-align: center;">Quay lại trang chủ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer cart-footer">
+    <div class="container footer__inner">
+      <p>COPYRIGHT @ 2026 BLOOMCARD</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>

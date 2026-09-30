@@ -54,13 +54,40 @@
                 <span class="product__price">${formatPrice(p.price)}</span>
                 <span class="stock">SL: ${stock}</span>
               </div>
-              <a href="#" class="product__buy js-buy" data-product="${p.id}">
+              <a href="#" class="product__buy js-add-cart" data-product="${p.id}">
                 ${sold ? "Đã bán" : `<span>Mua ngay</span><svg class="arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`}
               </a>
             </div>
           </div>
         </article>`;
     }).join("");
+  }
+
+  const findProduct = (id) => PRODUCTS.find((x) => String(x.id) === String(id));
+
+  /* ---------- Nút Mua ngay -> Thêm vào giỏ hàng ---------- */
+  function handleAddToCart(e) {
+    const btn = e.target.closest(".js-add-cart");
+    if (!btn) return;
+    e.preventDefault();
+
+    const p = findProduct(btn.dataset.product);
+    if (!p) return;
+    if (p.status === "sold" || (p.stock !== undefined && p.stock <= 0)) {
+      toast("Sản phẩm này hiện đã bán hết!");
+      return;
+    }
+
+    if (window.Cart) {
+      const res = window.Cart.addItem(p);
+      if (res === "already_in_cart") {
+        toast(`"${p.name}" đã có trong giỏ hàng rồi nha!`);
+      } else {
+        toast(`✿ Đã thêm "${p.name}" vào giỏ hàng!`);
+      }
+      btn.style.transform = "scale(0.95)";
+      setTimeout(() => { btn.style.transform = ""; }, 180);
+    }
   }
 
   /* ---------- Nút Mua ngay -> Messenger ---------- */
@@ -470,7 +497,9 @@
     initStepsAuto();
     initReveal();
     document.addEventListener("click", handleBuy);
-    $("#year").textContent = new Date().getFullYear();
+    document.addEventListener("click", handleAddToCart);
+    const yearEl = $("#year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // chờ dữ liệu từ Supabase rồi mới vẽ danh sách card
     const grid = $("#productGrid");
