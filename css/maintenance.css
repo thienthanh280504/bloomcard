@@ -166,11 +166,12 @@ body {
 .wrench {
   position: absolute;
   color: #fff;
+  transform-origin: center;
   animation: wrenchBob 3s ease-in-out infinite;
 }
 @keyframes wrenchBob {
-  0%, 100% { transform: rotate(-10deg); }
-  50%      { transform: rotate(10deg); }
+  0%, 100% { transform: rotate(-12deg); }
+  50%      { transform: rotate(12deg); }
 }
 
 /* ===== Heading ===== */
