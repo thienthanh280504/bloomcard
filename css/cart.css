@@ -735,6 +735,29 @@ body.cart-page-body .cart-footer p {
   border-radius: 6px;
 }
 
+.ck-qr-loading {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  text-align: center;
+  padding: 30px 10px;
+  font-style: italic;
+}
+
+.ck-qr-fallback {
+  text-align: center;
+  padding: 16px 10px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.ck-qr-fallback a {
+  color: var(--berry);
+  font-weight: 700;
+  text-decoration: underline;
+  display: block;
+  margin-top: 6px;
+}
+
 .ck-qr-info {
   text-align: center;
   font-size: 0.82rem;

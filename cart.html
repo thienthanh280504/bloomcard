@@ -177,7 +177,12 @@
           <div class="ck-qr-card">
             <div class="ck-qr-header">QUÉT ĐỂ THANH TOÁN</div>
                         <div class="ck-qr-image" id="ckQRImage">
-              <img id="ckQRImg" src="" alt="Mã QR thanh toán" />
+              <img id="ckQRImg" alt="Mã QR thanh toán" style="display:none;" />
+              <div class="ck-qr-fallback" id="ckQRFallback" style="display:none;">
+                <p>Không tải được mã QR.</p>
+                <a id="ckQRLink" href="#" target="_blank" rel="noopener">Mở VietQR trên trình duyệt</a>
+              </div>
+              <div class="ck-qr-loading" id="ckQRLoading">Đang tải mã QR...</div>
             </div>
             <div class="ck-qr-info">
               <div class="ck-qr-name">PHAM THI THAO VI</div>

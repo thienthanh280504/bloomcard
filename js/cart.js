@@ -313,10 +313,34 @@
       function updateQR() {
         const total = Cart.getTotal();
         const code = currentOrderCode;
+        const url = buildVietQRUrl(total, code);
+
+        const qrLoading = document.getElementById("ckQRLoading");
+        const qrFallback = document.getElementById("ckQRFallback");
+        const qrLink = document.getElementById("ckQRLink");
 
         if (qrImg) {
-          qrImg.src = buildVietQRUrl(total, code);
+          // Reset trạng thái
+          qrImg.style.display = "none";
+          if (qrLoading) qrLoading.style.display = "block";
+          if (qrFallback) qrFallback.style.display = "none";
+          if (qrLink) qrLink.href = url;
+
+          qrImg.onload = () => {
+            qrImg.style.display = "block";
+            if (qrLoading) qrLoading.style.display = "none";
+            if (qrFallback) qrFallback.style.display = "none";
+          };
+
+          qrImg.onerror = () => {
+            qrImg.style.display = "none";
+            if (qrLoading) qrLoading.style.display = "none";
+            if (qrFallback) qrFallback.style.display = "block";
+          };
+
+          qrImg.src = url;
         }
+
         if (qrAmount) {
           qrAmount.textContent = formatPrice(total);
         }
