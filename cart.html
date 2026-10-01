@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,10 +15,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="fonts/coiny-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="fonts/coiny-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=1790679200" />
   <link rel="stylesheet" href="css/cart.css" />
 </head>
+
 <body class="cart-page-body">
 
   <!-- ===== Giỏ hàng ===== -->
@@ -65,48 +69,153 @@
     </div>
   </main>
 
-  <!-- ===== Modal Nhập thông tin thanh toán COD ===== -->
+  <!-- ===== Modal Thanh toán chuyển khoản ===== -->
   <div class="ck-modal" id="checkoutModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
-    <div class="ck-modal__dialog">
+    <div class="ck-modal__dialog ck-modal__dialog--wide">
       <button type="button" class="ck-modal__close" id="checkoutClose" aria-label="Đóng">&times;</button>
+
       <div class="ck-modal__head">
-        <h2 id="modalTitle">Thông tin giao hàng</h2>
-        <p>Thanh toán khi nhận hàng (COD)</p>
+        <h2 id="modalTitle">Thông tin thanh toán</h2>
+        <p>Điền thông tin nhận hàng, quét mã QR bên phải để thanh toán.</p>
       </div>
 
-      <form id="checkoutForm">
-        <div class="ck-form-group">
-          <label for="ckName">Họ và tên người nhận *</label>
-          <input type="text" id="ckName" required placeholder="Nguyễn Văn A" autocomplete="name" />
+      <!-- Step indicator (mobile/tablet only) -->
+      <div class="ck-steps" id="ckSteps">
+        <div class="ck-steps__item is-active" data-step="1">
+          <span class="ck-steps__num">1</span>
+          <span class="ck-steps__label">Thông tin</span>
         </div>
-        <div class="ck-form-group">
-          <label for="ckPhone">Số điện thoại nhận hàng *</label>
-          <input type="tel" id="ckPhone" required placeholder="0901 234 567" autocomplete="tel" />
+        <div class="ck-steps__line"></div>
+        <div class="ck-steps__item" data-step="2">
+          <span class="ck-steps__num">2</span>
+          <span class="ck-steps__label">Thanh toán</span>
         </div>
-        <div class="ck-form-group">
-          <label for="ckAddress">Địa chỉ nhận hàng *</label>
-          <input type="text" id="ckAddress" required placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" autocomplete="street-address" />
-        </div>
-        <div class="ck-form-group">
-          <label for="ckNote">Ghi chú cho shop (không bắt buộc)</label>
-          <textarea id="ckNote" rows="2" placeholder="Ví dụ: Giao giờ hành chính, bọc kỹ giúp mình nha..."></textarea>
+      </div>
+
+      <div class="ck-body">
+        <!-- Cột trái: Form thông tin -->
+        <div class="ck-col-form" id="ckColForm">
+          <div class="ck-order-code">
+            <span class="ck-order-code__label">Mã đơn hàng:</span>
+            <span class="ck-order-code__value" id="ckOrderCode">BC000000</span>
+          </div>
+
+          <form id="checkoutForm" novalidate>
+            <div class="ck-form-group">
+              <label for="ckName">Tên người nhận <span class="ck-req">*</span></label>
+              <input type="text" id="ckName" required placeholder="Nguyễn Văn A" autocomplete="name" />
+            </div>
+            <div class="ck-form-group">
+              <label for="ckPhone">Số điện thoại <span class="ck-req">*</span></label>
+              <input type="tel" id="ckPhone" required placeholder="0901 234 567" autocomplete="tel" />
+            </div>
+            <div class="ck-form-group">
+              <label for="ckEmail">Email</label>
+              <input type="email" id="ckEmail" placeholder="email@example.com" autocomplete="email" />
+            </div>
+
+            <div class="ck-form-divider">
+              <span>ĐỊA CHỈ GIAO HÀNG</span>
+            </div>
+
+            <div class="ck-form-group">
+              <label for="ckStreet">Số nhà, tên đường <span class="ck-req">*</span></label>
+              <input type="text" id="ckStreet" required placeholder="123 Nguyễn Trãi" autocomplete="address-line1" />
+            </div>
+            <div class="ck-form-group">
+              <label for="ckWard">Phường / xã <span class="ck-req">*</span></label>
+              <input type="text" id="ckWard" required placeholder="Phường Bến Nghé" />
+            </div>
+            <div class="ck-form-row">
+              <div class="ck-form-group">
+                <label for="ckDistrict">Quận / huyện <span class="ck-req">*</span></label>
+                <input type="text" id="ckDistrict" required placeholder="Quận 1" />
+              </div>
+              <div class="ck-form-group">
+                <label for="ckCity">Thành phố / tỉnh <span class="ck-req">*</span></label>
+                <input type="text" id="ckCity" required placeholder="TP. Hồ Chí Minh" />
+              </div>
+            </div>
+
+            <div class="ck-review-box">
+              <div class="ck-review-row">
+                <span>Tiền sản phẩm:</span>
+                <strong id="checkoutTotalReview">0đ</strong>
+              </div>
+              <div class="ck-review-row ck-review-row--total">
+                <span>Tổng thanh toán:</span>
+                <strong id="checkoutGrandTotal">0đ</strong>
+              </div>
+            </div>
+
+            <!-- Mobile/Tablet: nút Tiếp theo -->
+            <div class="ck-mobile-actions" id="ckMobileActions">
+              <button type="button" class="btn-secondary" id="checkoutCancel">Hủy</button>
+              <button type="button" class="btn-checkout" id="ckBtnNext">Tiếp theo</button>
+            </div>
+
+            <!-- Desktop: nút Xác nhận -->
+            <div class="ck-desktop-actions" id="ckDesktopActions">
+              <button type="button" class="btn-secondary" id="checkoutCancelDesktop">Hủy</button>
+              <button type="submit" class="btn-checkout">Xác nhận đặt hàng</button>
+            </div>
+          </form>
         </div>
 
-        <div class="ck-review-box">
-          <div class="ck-review-row">
-            <span>Tiền hàng:</span>
-            <strong id="checkoutTotalReview">0đ</strong>
-          </div>
-          <div class="ck-review-note">
-            Bạn sẽ thanh toán phí vận chuyển khi nhận được hàng.
-          </div>
-        </div>
+        <!-- Cột phải: QR thanh toán -->
+        <div class="ck-col-qr" id="ckColQR">
+          <!-- Mobile: nút quay lại -->
+          <button type="button" class="ck-back-btn" id="ckBtnBack">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            Quay lại
+          </button>
 
-        <div class="ck-modal__actions">
-          <button type="button" class="btn-secondary" id="checkoutCancel">Hủy</button>
-          <button type="submit" class="btn-checkout">Xác nhận đặt hàng</button>
+          <div class="ck-qr-card">
+            <div class="ck-qr-header">QUÉT ĐỂ THANH TOÁN</div>
+                        <div class="ck-qr-image" id="ckQRImage">
+              <img id="ckQRImg" src="" alt="Mã QR thanh toán" />
+            </div>
+            <div class="ck-qr-info">
+              <div class="ck-qr-name">PHAM THI THAO VI</div>
+              <div class="ck-qr-account">
+                <span>Tài khoản: </span>
+                <strong id="ckAccountNum">104882437853</strong>
+              </div>
+              <div class="ck-qr-bank">VietinBank</div>
+              <div class="ck-qr-amount">
+                Số tiền: <strong id="ckQRAmount">0đ</strong>
+              </div>
+              <div class="ck-qr-content">
+                Nội dung: <strong id="ckQRContent">BC000000</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nút sao chép STK -->
+          <button type="button" class="ck-copy-btn" id="ckCopyAccount">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            <span id="ckCopyText">Sao chép số tài khoản</span>
+          </button>
+
+          <div class="ck-qr-help">
+            Nếu bạn cần hỗ trợ, liên hệ
+            <a href="https://www.facebook.com/share/1E9iBfy95s/?mibextid=wwXIfr" target="_blank" rel="noopener">Messenger</a>
+          </div>
+
+          <!-- Mobile: nút xác nhận -->
+          <div class="ck-mobile-submit" id="ckMobileSubmit">
+            <button type="button" class="btn-checkout" id="ckBtnConfirmMobile">Xác nhận đặt hàng</button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -117,7 +226,8 @@
         <div class="ck-success__badge">✿</div>
         <h2>Đặt hàng thành công!</h2>
         <div class="ck-success__code" id="successCode">#BC123456</div>
-        <p>Cảm ơn bạn đã ủng hộ BloomCard! Shop sẽ liên hệ xác nhận đơn và đóng gói gửi đi trong 24h.<br /><strong>Bạn sẽ thanh toán phí vận chuyển khi nhận được hàng.</strong></p>
+        <p>Cảm ơn bạn đã ủng hộ BloomCard! Shop sẽ kiểm tra chuyển khoản và đóng gói gửi đi trong 24h.<br /><strong>Phí
+            vận chuyển sẽ được tính khi shop xác nhận đơn.</strong></p>
         <div class="ck-success__btns">
           <a href="#" target="_blank" class="btn-checkout" id="successMsgLink">Nhắn tin shop qua Messenger</a>
           <a href="index.html" class="btn-secondary" style="text-align: center;">Quay lại trang chủ</a>
@@ -136,4 +246,5 @@
   <script src="js/config.js"></script>
   <script src="js/cart.js"></script>
 </body>
+
 </html>

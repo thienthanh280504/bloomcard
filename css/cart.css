@@ -303,7 +303,7 @@ body.cart-page-body .cart-footer p {
 }
 
 /* =========================================================
-   Modal Đặt hàng (COD) & Thành công
+   Modal Thanh toán chuyển khoản — 2 cột + 2 bước mobile
    ========================================================= */
 .ck-modal {
   position: fixed;
@@ -339,6 +339,10 @@ body.cart-page-body .cart-footer p {
   transition: transform 0.25s;
 }
 
+.ck-modal__dialog--wide {
+  width: min(920px, 100%);
+}
+
 .ck-modal.is-open .ck-modal__dialog {
   transform: translateY(0) scale(1);
 }
@@ -359,6 +363,7 @@ body.cart-page-body .cart-footer p {
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  z-index: 5;
 }
 
 .ck-modal__close:hover {
@@ -375,6 +380,7 @@ body.cart-page-body .cart-footer p {
   font-size: 1.5rem;
   color: var(--ink);
   margin-bottom: 4px;
+  padding-right: 40px;
 }
 
 .ck-modal__head p {
@@ -382,6 +388,100 @@ body.cart-page-body .cart-footer p {
   color: var(--ink-soft);
 }
 
+/* ---------- Step Indicator (mobile/tablet only) ---------- */
+.ck-steps {
+  display: none; /* ẩn trên desktop */
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ck-steps__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.45;
+  transition: opacity 0.3s;
+}
+
+.ck-steps__item.is-active {
+  opacity: 1;
+}
+
+.ck-steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--blush);
+  color: var(--berry);
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: background 0.3s, color 0.3s;
+}
+
+.ck-steps__item.is-active .ck-steps__num {
+  background: var(--berry);
+  color: var(--white);
+}
+
+.ck-steps__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ck-steps__line {
+  width: 40px;
+  height: 2px;
+  background: rgba(216, 160, 174, 0.4);
+  border-radius: 2px;
+}
+
+/* ---------- Body: 2 cột desktop ---------- */
+.ck-body {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Cột form */
+.ck-col-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mã đơn hàng */
+.ck-order-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #faf4f5;
+  border: 1px solid rgba(216, 160, 174, 0.3);
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.ck-order-code__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ck-order-code__value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Form inputs ---------- */
 .ck-form-group {
   margin-bottom: 12px;
 }
@@ -392,6 +492,10 @@ body.cart-page-body .cart-footer p {
   font-size: 0.85rem;
   color: var(--ink);
   margin-bottom: 4px;
+}
+
+.ck-req {
+  color: var(--berry);
 }
 
 .ck-form-group input,
@@ -415,10 +519,47 @@ body.cart-page-body .cart-footer p {
   box-shadow: 0 0 0 3px rgba(197, 68, 116, 0.15);
 }
 
+.ck-form-group input.is-error {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
+}
+
+/* Dải phân cách ĐỊA CHỈ GIAO HÀNG */
+.ck-form-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 12px;
+}
+
+.ck-form-divider::before,
+.ck-form-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(216, 160, 174, 0.35);
+}
+
+.ck-form-divider span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* 2 cột quận + thành phố */
+.ck-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- Review box ---------- */
 .ck-review-box {
   background: #faf4f5;
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   margin: 14px 0;
   font-size: 0.88rem;
 }
@@ -426,11 +567,34 @@ body.cart-page-body .cart-footer p {
 .ck-review-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 4px;
 }
 
 .ck-review-row strong {
   color: var(--berry);
+}
+
+.ck-review-row--total {
+  border-top: 1px solid rgba(216, 160, 174, 0.3);
+  margin-top: 8px;
+  padding-top: 8px;
+  margin-bottom: 0;
+}
+
+.ck-review-row--total span {
+  font-weight: 700;
+}
+
+.ck-review-row--total strong {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.ck-ship-note {
+  color: var(--berry);
+  font-style: italic;
+  font-size: 0.84rem;
 }
 
 .ck-review-note {
@@ -439,13 +603,21 @@ body.cart-page-body .cart-footer p {
   margin-top: 4px;
 }
 
-.ck-modal__actions {
+/* ---------- Action buttons ---------- */
+.ck-mobile-actions {
+  display: none; /* ẩn trên desktop */
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ck-desktop-actions {
   display: flex;
   gap: 12px;
   margin-top: 18px;
 }
 
-.ck-modal__actions .btn-checkout {
+.ck-desktop-actions .btn-checkout,
+.ck-mobile-actions .btn-checkout {
   flex: 1;
 }
 
@@ -463,6 +635,190 @@ body.cart-page-body .cart-footer p {
 .btn-secondary:hover {
   background: #fbf5f5;
   color: var(--ink);
+}
+
+/* ---------- Cột phải: QR Card ---------- */
+.ck-col-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Nút quay lại (chỉ mobile) */
+.ck-back-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--berry);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 6px 2px;
+  margin-bottom: 4px;
+  transition: opacity 0.2s;
+}
+
+.ck-back-btn:hover {
+  opacity: 0.7;
+}
+
+/* QR Card */
+.ck-qr-card {
+  background: linear-gradient(145deg, #c6ede3, #a8e0d0);
+  border-radius: 20px;
+  padding: 20px;
+  color: var(--ink);
+  width: 100%;
+  max-width: 340px;
+  box-shadow: 0 15px 40px -15px rgba(61, 42, 51, 0.18);
+}
+
+.ck-qr-header {
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.ck-qr-logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ck-qr-bank-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #e74c3c;
+}
+
+.ck-qr-separator {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.9rem;
+}
+
+.ck-qr-service {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: #3498db;
+}
+
+.ck-qr-vietqr {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #2ecc71;
+}
+
+.ck-qr-image {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.ck-qr-image img {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+.ck-qr-info {
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.ck-qr-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+  color: var(--ink);
+}
+
+.ck-qr-account strong {
+  color: var(--berry);
+  letter-spacing: 0.04em;
+}
+
+.ck-qr-bank {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.ck-qr-amount strong {
+  color: var(--berry);
+}
+
+.ck-qr-content strong {
+  color: #2f6b5a;
+}
+
+/* Nút sao chép */
+.ck-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(216, 160, 174, 0.45);
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ck-copy-btn:hover {
+  background: var(--blush);
+  border-color: var(--berry);
+  color: var(--berry);
+}
+
+.ck-copy-btn.is-copied {
+  background: var(--mint);
+  border-color: var(--green);
+  color: #2f6b5a;
+}
+
+/* Help text */
+.ck-qr-help {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.ck-qr-help a {
+  color: var(--berry);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Mobile submit */
+.ck-mobile-submit {
+  display: none;
+  width: 100%;
+}
+
+.ck-mobile-submit .btn-checkout {
+  width: 100%;
 }
 
 /* Modal thành công */
@@ -508,7 +864,90 @@ body.cart-page-body .cart-footer p {
   gap: 10px;
 }
 
-/* Responsive */
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+/* Tablet + Mobile: hiện step wizard, ẩn cột QR */
+@media (max-width: 768px) {
+  .ck-modal__dialog--wide {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 18px;
+    padding: 20px 18px;
+  }
+
+  .ck-modal__head {
+    text-align: center;
+  }
+
+  .ck-modal__head h2 {
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+    text-align: center;
+    padding-right: 0;
+    padding-left: 0;
+    margin-left: auto;
+    margin-right: auto;
+    white-space: nowrap;
+  }
+
+  .ck-modal__head p {
+    display: none;
+  }
+
+  .ck-steps {
+    display: flex;
+  }
+
+  .ck-body {
+    display: block;
+  }
+
+  .ck-col-form {
+    display: flex;
+  }
+
+  .ck-col-qr {
+    display: none;
+  }
+
+  .ck-col-qr.is-visible {
+    display: flex;
+    animation: fadeSlideUp 0.3s ease;
+  }
+
+  .ck-col-form.is-hidden {
+    display: none;
+  }
+
+  .ck-desktop-actions {
+    display: none !important;
+  }
+
+  .ck-mobile-actions {
+    display: flex;
+  }
+
+  .ck-back-btn {
+    display: inline-flex;
+  }
+
+  .ck-mobile-submit {
+    display: block;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 769px) {
+  .ck-modal__dialog--wide {
+    width: min(860px, 100%);
+  }
+
+  .ck-body {
+    gap: 20px;
+  }
+}
+
+/* Cart layout responsive */
 @media (max-width: 900px) {
   .cart-layout {
     grid-template-columns: 1fr;
@@ -542,4 +981,21 @@ body.cart-page-body .cart-footer p {
     padding-top: 10px;
     border-top: 1px dashed rgba(216, 160, 174, 0.3);
   }
+
+  .ck-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

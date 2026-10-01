@@ -1,5 +1,5 @@
 /* =========================================================
-   BloomCard — Giỏ hàng (Cart)
+   BloomCard — Giỏ hàng (Cart) — Chuyển khoản ngân hàng
    ========================================================= */
 (function () {
   "use strict";
@@ -7,8 +7,27 @@
   const STORAGE_KEY = "bloomcard_cart";
   const ORDERS_KEY = "bloomcard_orders";
 
+  /* ---- Thông tin ngân hàng ---- */
+  const BANK_ID = "ICB";                   // Mã ngân hàng VietinBank trên VietQR
+  const BANK_ACCOUNT = "104882437853";
+  const BANK_NAME = "PHAM THI THAO VI";
+
   const formatPrice = (n) => Number(n || 0).toLocaleString("vi-VN") + "đ";
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /**
+   * Tạo URL ảnh QR từ VietQR API
+   * @param {number} amount - Số tiền
+   * @param {string} addInfo - Nội dung chuyển khoản
+   */
+  function buildVietQRUrl(amount, addInfo) {
+    const params = new URLSearchParams({
+      accountName: BANK_NAME,
+    });
+    if (amount > 0) params.set("amount", amount);
+    if (addInfo) params.set("addInfo", addInfo);
+    return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?${params.toString()}`;
+  }
 
   const Cart = {
     // Lấy danh sách sản phẩm trong giỏ
@@ -158,7 +177,9 @@
       `).join("");
     },
 
-    // Khởi tạo các sự kiện trên trang giỏ hàng
+    // ================================================================
+    // Khởi tạo sự kiện checkout chuyển khoản
+    // ================================================================
     initCartEvents() {
       const listEl = document.getElementById("cartItemsList");
       if (listEl) {
@@ -183,108 +204,316 @@
         });
       }
 
-      // Nút THANH TOÁN
+      // ---------- Elements ----------
       const checkoutBtn = document.getElementById("btnCheckout");
       const checkoutModal = document.getElementById("checkoutModal");
       const checkoutClose = document.getElementById("checkoutClose");
-      const checkoutCancel = document.getElementById("checkoutCancel");
       const checkoutForm = document.getElementById("checkoutForm");
       const checkoutTotalReview = document.getElementById("checkoutTotalReview");
+      const checkoutGrandTotal = document.getElementById("checkoutGrandTotal");
 
-      if (checkoutBtn && checkoutModal) {
-        checkoutBtn.addEventListener("click", () => {
-          const items = this.getItems();
-          if (items.length === 0) return;
-          if (checkoutTotalReview) {
-            checkoutTotalReview.textContent = formatPrice(this.getTotal());
+      // Cancel buttons
+      const checkoutCancel = document.getElementById("checkoutCancel");
+      const checkoutCancelDesktop = document.getElementById("checkoutCancelDesktop");
+
+      // Mobile 2-step elements
+      const colForm = document.getElementById("ckColForm");
+      const colQR = document.getElementById("ckColQR");
+      const btnNext = document.getElementById("ckBtnNext");
+      const btnBack = document.getElementById("ckBtnBack");
+      const btnConfirmMobile = document.getElementById("ckBtnConfirmMobile");
+      const steps = document.querySelectorAll(".ck-steps__item");
+
+      // QR elements
+      const qrImg = document.getElementById("ckQRImg");
+      const qrAmount = document.getElementById("ckQRAmount");
+      const qrContent = document.getElementById("ckQRContent");
+      const orderCodeEl = document.getElementById("ckOrderCode");
+      const copyBtn = document.getElementById("ckCopyAccount");
+      const copyText = document.getElementById("ckCopyText");
+
+      if (!checkoutBtn || !checkoutModal) return;
+
+      // Sinh mã đơn hàng
+      let currentOrderCode = "";
+
+      function generateOrderCode() {
+        currentOrderCode = "BC" + Math.floor(100000 + Math.random() * 900000);
+        return currentOrderCode;
+      }
+
+      // Kiểm tra mobile/tablet
+      function isMobile() {
+        return window.innerWidth <= 768;
+      }
+
+      // Reset về bước 1 (mobile)
+      function resetToStep1() {
+        if (colForm) {
+          colForm.classList.remove("is-hidden");
+        }
+        if (colQR) {
+          colQR.classList.remove("is-visible");
+        }
+        if (steps.length >= 2) {
+          steps[0].classList.add("is-active");
+          steps[1].classList.remove("is-active");
+        }
+      }
+
+      // Chuyển sang bước 2 (mobile)
+      function goToStep2() {
+        if (colForm) colForm.classList.add("is-hidden");
+        if (colQR) colQR.classList.add("is-visible");
+        if (steps.length >= 2) {
+          steps[0].classList.remove("is-active");
+          steps[1].classList.add("is-active");
+        }
+        // Scroll modal lên đầu
+        const dialog = checkoutModal.querySelector(".ck-modal__dialog");
+        if (dialog) dialog.scrollTop = 0;
+      }
+
+      // Validate form
+      function validateForm() {
+        const requiredFields = [
+          { id: "ckName", label: "Tên người nhận" },
+          { id: "ckPhone", label: "Số điện thoại" },
+          { id: "ckStreet", label: "Số nhà, tên đường" },
+          { id: "ckWard", label: "Phường / xã" },
+          { id: "ckDistrict", label: "Quận / huyện" },
+          { id: "ckCity", label: "Thành phố / tỉnh" },
+        ];
+
+        let valid = true;
+        let firstError = null;
+
+        requiredFields.forEach(({ id }) => {
+          const el = document.getElementById(id);
+          if (el) {
+            const val = el.value.trim();
+            if (!val) {
+              el.classList.add("is-error");
+              valid = false;
+              if (!firstError) firstError = el;
+            } else {
+              el.classList.remove("is-error");
+            }
           }
-          checkoutModal.classList.add("is-open");
-          checkoutModal.setAttribute("aria-hidden", "false");
-          const firstInput = checkoutModal.querySelector("input");
-          if (firstInput) firstInput.focus();
         });
 
-        const closeModal = () => {
-          checkoutModal.classList.remove("is-open");
-          checkoutModal.setAttribute("aria-hidden", "true");
+        if (!valid && firstError) {
+          firstError.focus();
+        }
+
+        return valid;
+      }
+
+      // Cập nhật QR
+      function updateQR() {
+        const total = Cart.getTotal();
+        const code = currentOrderCode;
+
+        if (qrImg) {
+          qrImg.src = buildVietQRUrl(total, code);
+        }
+        if (qrAmount) {
+          qrAmount.textContent = formatPrice(total);
+        }
+        if (qrContent) {
+          qrContent.textContent = code;
+        }
+      }
+
+      // ---------- Mở modal ----------
+      checkoutBtn.addEventListener("click", () => {
+        const items = this.getItems();
+        if (items.length === 0) return;
+
+        const code = generateOrderCode();
+        const total = this.getTotal();
+
+        // Cập nhật mã đơn + giá
+        if (orderCodeEl) orderCodeEl.textContent = code;
+        if (checkoutTotalReview) checkoutTotalReview.textContent = formatPrice(total);
+        if (checkoutGrandTotal) checkoutGrandTotal.textContent = formatPrice(total);
+
+        // Cập nhật QR
+        updateQR();
+
+        // Reset bước
+        resetToStep1();
+
+        // Mở modal
+        checkoutModal.classList.add("is-open");
+        checkoutModal.setAttribute("aria-hidden", "false");
+
+        const firstInput = checkoutModal.querySelector("input");
+        if (firstInput) firstInput.focus();
+      });
+
+      // ---------- Đóng modal ----------
+      const closeModal = () => {
+        checkoutModal.classList.remove("is-open");
+        checkoutModal.setAttribute("aria-hidden", "true");
+        resetToStep1();
+      };
+
+      if (checkoutClose) checkoutClose.addEventListener("click", closeModal);
+      if (checkoutCancel) checkoutCancel.addEventListener("click", closeModal);
+      if (checkoutCancelDesktop) checkoutCancelDesktop.addEventListener("click", closeModal);
+      checkoutModal.addEventListener("click", (e) => {
+        if (e.target === checkoutModal) closeModal();
+      });
+
+      // ---------- Mobile: Tiếp theo → bước 2 ----------
+      if (btnNext) {
+        btnNext.addEventListener("click", () => {
+          if (!validateForm()) return;
+          goToStep2();
+        });
+      }
+
+      // ---------- Mobile: Quay lại → bước 1 ----------
+      if (btnBack) {
+        btnBack.addEventListener("click", () => {
+          resetToStep1();
+        });
+      }
+
+      // ---------- Sao chép STK ----------
+      if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(BANK_ACCOUNT).then(() => {
+              copyBtn.classList.add("is-copied");
+              if (copyText) copyText.textContent = "Đã sao chép!";
+              setTimeout(() => {
+                copyBtn.classList.remove("is-copied");
+                if (copyText) copyText.textContent = "Sao chép số tài khoản";
+              }, 2500);
+            }).catch(() => {
+              fallbackCopy();
+            });
+          } else {
+            fallbackCopy();
+          }
+
+          function fallbackCopy() {
+            const ta = document.createElement("textarea");
+            ta.value = BANK_ACCOUNT;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand("copy");
+              copyBtn.classList.add("is-copied");
+              if (copyText) copyText.textContent = "Đã sao chép!";
+              setTimeout(() => {
+                copyBtn.classList.remove("is-copied");
+                if (copyText) copyText.textContent = "Sao chép số tài khoản";
+              }, 2500);
+            } catch (err) {}
+            document.body.removeChild(ta);
+          }
+        });
+      }
+
+      // ---------- Clear error on input ----------
+      checkoutModal.querySelectorAll("input").forEach((inp) => {
+        inp.addEventListener("input", () => {
+          inp.classList.remove("is-error");
+        });
+      });
+
+      // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
+      function handleSubmit() {
+        if (!validateForm()) {
+          // Nếu đang ở bước 2 (mobile), quay lại bước 1 để user sửa
+          if (isMobile()) {
+            resetToStep1();
+          }
+          return;
+        }
+
+        const name = (document.getElementById("ckName")?.value || "").trim();
+        const phone = (document.getElementById("ckPhone")?.value || "").trim();
+        const email = (document.getElementById("ckEmail")?.value || "").trim();
+        const street = (document.getElementById("ckStreet")?.value || "").trim();
+        const ward = (document.getElementById("ckWard")?.value || "").trim();
+        const district = (document.getElementById("ckDistrict")?.value || "").trim();
+        const city = (document.getElementById("ckCity")?.value || "").trim();
+        const address = `${street}, ${ward}, ${district}, ${city}`;
+
+        const items = Cart.getItems();
+        const total = Cart.getTotal();
+
+        const order = {
+          code: currentOrderCode,
+          name,
+          phone,
+          email,
+          address,
+          items,
+          total,
+          shippingMethod: "Chuyển khoản ngân hàng (VietinBank)",
+          createdAt: new Date().toISOString()
         };
 
-        if (checkoutClose) checkoutClose.addEventListener("click", closeModal);
-        if (checkoutCancel) checkoutCancel.addEventListener("click", closeModal);
-        checkoutModal.addEventListener("click", (e) => {
-          if (e.target === checkoutModal) closeModal();
-        });
+        // Lưu vào localStorage
+        try {
+          const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+          orders.unshift(order);
+          localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+        } catch (err) {}
 
-        // Xử lý gửi đơn hàng
-        if (checkoutForm) {
-          checkoutForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const name = (document.getElementById("ckName")?.value || "").trim();
-            const phone = (document.getElementById("ckPhone")?.value || "").trim();
-            const address = (document.getElementById("ckAddress")?.value || "").trim();
-            const note = (document.getElementById("ckNote")?.value || "").trim();
+        // Xoá giỏ hàng
+        Cart.clear();
+        closeModal();
 
-            if (!name || !phone || !address) {
-              alert("Vui lòng điền đầy đủ Họ tên, Số điện thoại và Địa chỉ nhận hàng.");
-              return;
+        // Hiển thị modal thành công
+        const successModal = document.getElementById("successModal");
+        const successCode = document.getElementById("successCode");
+        const successMsgLink = document.getElementById("successMsgLink");
+
+        if (successCode) successCode.textContent = "#" + currentOrderCode;
+
+        // Link nhắn Messenger kèm nội dung đơn hàng
+        if (successMsgLink) {
+          const itemsListText = items.map((it) => `- ${it.name}`).join("\n");
+          const msg = `Chào BloomCard, mình vừa đặt đơn #${currentOrderCode} và đã chuyển khoản:\n${itemsListText}\nTổng tiền: ${formatPrice(total)}\nĐịa chỉ: ${address} - SĐT: ${phone}\nShop xác nhận đơn giúp mình nha!`;
+          const fbUrl = (window.SHOP_CONFIG && window.SHOP_CONFIG.messengerUrl) || "https://m.me/bloomcard";
+          successMsgLink.href = fbUrl;
+          successMsgLink.onclick = () => {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(msg).catch(() => {});
             }
-
-            const items = this.getItems();
-            const total = this.getTotal();
-            const orderCode = "BC" + Math.floor(100000 + Math.random() * 900000);
-
-            const order = {
-              code: orderCode,
-              name,
-              phone,
-              address,
-              note,
-              items,
-              total,
-              shippingMethod: "COD (Bạn sẽ thanh toán phí vận chuyển khi nhận được hàng)",
-              createdAt: new Date().toISOString()
-            };
-
-            // Lưu vào localStorage
-            try {
-              const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
-              orders.unshift(order);
-              localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-            } catch (err) {}
-
-            // Xoá giỏ hàng
-            this.clear();
-            closeModal();
-
-            // Hiển thị modal thành công
-            const successModal = document.getElementById("successModal");
-            const successCode = document.getElementById("successCode");
-            const successMsgLink = document.getElementById("successMsgLink");
-
-            if (successCode) successCode.textContent = "#" + orderCode;
-
-            // Link nhắn Messenger kèm nội dung đơn hàng (nếu khách muốn)
-            if (successMsgLink) {
-              const itemsListText = items.map((it) => `- ${it.name}`).join("\n");
-              const msg = `Chào BloomCard, mình vừa đặt đơn #${orderCode}:\n${itemsListText}\nTổng tiền hàng: ${formatPrice(total)}\nĐịa chỉ: ${address} - SĐT: ${phone}\nShop xác nhận đơn giúp mình nha!`;
-              const fbUrl = (window.SHOP_CONFIG && window.SHOP_CONFIG.messengerUrl) || "https://m.me/bloomcard";
-              successMsgLink.href = fbUrl;
-              successMsgLink.onclick = () => {
-                if (navigator.clipboard) {
-                  navigator.clipboard.writeText(msg).catch(() => {});
-                }
-              };
-            }
-
-            if (successModal) {
-              successModal.classList.add("is-open");
-              successModal.setAttribute("aria-hidden", "false");
-            } else {
-              alert(`Đặt hàng thành công! Mã đơn: #${orderCode}. Shop sẽ liên hệ gửi hàng sớm.`);
-              window.location.href = "index.html";
-            }
-          });
+          };
         }
+
+        if (successModal) {
+          successModal.classList.add("is-open");
+          successModal.setAttribute("aria-hidden", "false");
+        } else {
+          alert(`Đặt hàng thành công! Mã đơn: #${currentOrderCode}. Shop sẽ kiểm tra chuyển khoản và gửi hàng sớm.`);
+          window.location.href = "index.html";
+        }
+      }
+
+      // Desktop form submit
+      if (checkoutForm) {
+        checkoutForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          handleSubmit();
+        });
+      }
+
+      // Mobile confirm button
+      if (btnConfirmMobile) {
+        btnConfirmMobile.addEventListener("click", () => {
+          handleSubmit();
+        });
       }
     }
   };
