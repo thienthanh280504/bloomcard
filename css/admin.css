@@ -259,36 +259,106 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
   overflow: hidden;
 }
 .plist:empty, .tlist:empty { display: none; }
-.pitem, .titem {
-  display: grid; align-items: center; gap: 16px;
-  padding: 12px 16px; border-bottom: 1px solid var(--border);
+.pitem {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.titem {
+  display: grid;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  grid-template-columns: auto minmax(0, 1fr) auto;
 }
 .pitem:last-child, .titem:last-child { border-bottom: 0; }
-.pitem { grid-template-columns: 44px minmax(0, 1fr) auto auto; }
-.titem { grid-template-columns: auto minmax(0, 1fr) auto; }
 .pitem:hover, .titem:hover { background: #fafbfc; }
 .pitem.is-sold .pitem__img { opacity: .5; }
 
 .pitem__img, .titem__img {
   width: 44px; height: 58px; object-fit: cover; border-radius: 6px;
   background: var(--bg); border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .titem__img.is-wide { width: 64px; height: 48px; }
-.pitem__info, .titem__info { min-width: 0; }
-.pitem h4, .titem__info b {
+.pitem__info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  flex: 1;
+}
+.titem__info { min-width: 0; display: grid; gap: 2px; }
+.titem__info b {
   font-size: 14px; font-weight: 600; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.titem__info { display: grid; gap: 2px; }
 .titem__info small { font-size: 12px; color: var(--text-3); }
-.pitem__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
-.pitem__meta b { font-size: 13px; font-weight: 600; color: var(--text); margin-right: 4px; font-variant-numeric: tabular-nums; }
-.pitem__qty { display: flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius); }
+
+.pitem__name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  flex: 1;
+  overflow: hidden;
+}
+.pitem__name, .pitem h4 {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.pitem__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  flex-shrink: 0;
+}
+.pitem__price {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  width: 90px;
+  min-width: 90px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.pill--status {
+  width: 80px;
+  min-width: 80px;
+  justify-content: center;
+  text-align: center;
+  flex-shrink: 0;
+}
+.pill--sl {
+  width: 60px;
+  min-width: 60px;
+  justify-content: center;
+  text-align: center;
+  flex-shrink: 0;
+  background: var(--bg);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.pitem__qty { display: flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius); flex-shrink: 0; }
 .pitem__qty .ic { width: 28px; height: 28px; }
 .pitem__act {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 .titem__act { display: flex; align-items: center; gap: 4px; }
 
@@ -749,7 +819,18 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
 
   .pitem { grid-template-columns: 40px minmax(0, 1fr); grid-template-areas: "img info" "qty act"; gap: 10px 12px; padding: 12px; }
   .pitem__img { grid-area: img; width: 40px; height: 52px; }
-  .pitem__info { grid-area: info; }
+  .pitem__info {
+    grid-area: info;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+  .pitem__name-wrap { width: 100%; flex-wrap: wrap; gap: 6px; }
+  .pitem__meta { gap: 8px; margin-top: 2px; }
+  .pitem__price { width: auto; min-width: 0; text-align: left; }
+  .pill--status, .pill--sl { width: auto; min-width: 0; }
   .pitem__qty { grid-area: qty; justify-self: start; }
   .pitem__act { grid-area: act; justify-self: end; }
   .ic { width: 36px; height: 36px; }

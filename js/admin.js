@@ -268,14 +268,16 @@
         <article class="pitem ${sold ? "is-sold" : ""}" data-id="${esc(p.id)}">
           <img class="pitem__img" src="${esc(asset(p.image || "images/favicon.svg"))}" alt="" loading="lazy" />
           <div class="pitem__info">
-            <h4>${esc(p.name)}</h4>
-            <div class="pitem__meta">
-              <b>${fmt(p.price)}</b>
-              <span class="pill ${sold ? "pill--sold" : ""}">${sold ? "Đã bán" : "Còn hàng"}</span>
-              <span class="pill pill--sl">SL: ${sold ? 0 : p.stock}</span>
+            <div class="pitem__name-wrap">
+              <h4 class="pitem__name" title="${esc(p.name)}">${esc(p.name)}</h4>
               ${p.badge ? `<span class="pill pill--badge">${esc(p.badge)}</span>` : ""}
               ${p.image2 ? `<span class="pill" title="Có 2 ảnh" style="background:#ecfdf5;color:#059669">2 ảnh</span>` : ""}
               ${p.video ? `<span class="pill" title="Có video" style="background:#fdf2f8;color:#db2777">▶ Video</span>` : ""}
+            </div>
+            <div class="pitem__meta">
+              <b class="pitem__price">${fmt(p.price)}</b>
+              <span class="pill pill--status ${sold ? "pill--sold" : ""}">${sold ? "Đã bán" : "Còn hàng"}</span>
+              <span class="pill pill--sl">SL: ${sold ? 0 : p.stock}</span>
             </div>
           </div>
           <div class="pitem__qty">
@@ -306,12 +308,16 @@
   function patchRow(row, p) {
     const sold = isSold(p);
     row.classList.toggle("is-sold", sold);
-    const pill = row.querySelector(".pill");
-    pill.textContent = sold ? "Đã bán" : "Còn hàng";
-    pill.classList.toggle("pill--sold", sold);
+    const pill = row.querySelector(".pill--status") || row.querySelector(".pill");
+    if (pill) {
+      pill.textContent = sold ? "Đã bán" : "Còn hàng";
+      pill.classList.toggle("pill--sold", sold);
+    }
     const sl = row.querySelector(".pill--sl");
-    sl.textContent = "SL: " + (sold ? 0 : p.stock);
-    sl.classList.remove("bump"); void sl.offsetWidth; sl.classList.add("bump");
+    if (sl) {
+      sl.textContent = "SL: " + (sold ? 0 : p.stock);
+      sl.classList.remove("bump"); void sl.offsetWidth; sl.classList.add("bump");
+    }
     summary();
   }
 
