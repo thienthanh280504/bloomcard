@@ -16,13 +16,14 @@
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // ảnh cũ lưu dạng "images/..." (tính từ thư mục gốc web) -> thêm "../" vì trang này nằm trong /hello
   const asset = (u) => (!u || /^(data:|blob:|https?:|\/)/.test(u) ? u : (window.ASSET_BASE || "") + u);
-  const ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
-  const ICON_DEL = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+  const ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+  const ICON_DEL = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
 
   /* ---------- Dữ liệu trong trang ---------- */
   let products = [];   // chưa xoá
   let feedbacks = [];  // chưa xoá
   let trash = [];      // đã xoá (cả 2 loại)
+  let orders = [];     // danh sách đơn hàng
 
   /* =========================================================
      TRẠNG THÁI LƯU
@@ -101,8 +102,24 @@
      TẢI DỮ LIỆU
      ========================================================= */
   async function loadAll() {
-    $("#appLoading").hidden = false;
+    if ($("#appLoading")) $("#appLoading").hidden = true;
     $("#appError").hidden = true;
+    if ($("#productList") && !products.length) {
+      $("#productList").innerHTML = '<div class="state-box state-box--list"><span class="spinner"></span>Đang tải danh sách sản phẩm…</div>';
+      if ($("#productEmpty")) $("#productEmpty").hidden = true;
+    }
+    if ($("#ordersList") && !orders.length) {
+      $("#ordersList").innerHTML = '<div class="state-box state-box--list"><span class="spinner"></span>Đang tải danh sách đơn hàng…</div>';
+      if ($("#orderEmpty")) $("#orderEmpty").hidden = true;
+    }
+    if ($("#fbList") && !feedbacks.length) {
+      $("#fbList").innerHTML = '<div class="state-box state-box--list"><span class="spinner"></span>Đang tải feedback…</div>';
+      if ($("#fbEmpty")) $("#fbEmpty").hidden = true;
+    }
+    if ($("#trashList") && !trash.length) {
+      $("#trashList").innerHTML = '<div class="state-box state-box--list"><span class="spinner"></span>Đang tải danh sách đã xoá…</div>';
+      if ($("#trashEmpty")) $("#trashEmpty").hidden = true;
+    }
     try {
       const [p, f] = await Promise.all([
         sb.from("products").select("*").order("position").order("created_at", { ascending: false }),
@@ -116,6 +133,7 @@
         ...F.filter((x) => x.deleted_at).map((x) => ({ type: "feedback", row: x })),
       ].sort((a, b) => String(b.row.deleted_at).localeCompare(String(a.row.deleted_at)));
       renderProducts(); renderFeedback(); renderTrash();
+      await loadOrders();
       setSave("ok");
     } catch (e) {
       console.error(e);
@@ -125,7 +143,7 @@
         : "Không tải được dữ liệu. Kiểm tra kết nối mạng rồi thử lại.";
       $("#appError").hidden = false;
     } finally {
-      $("#appLoading").hidden = true;
+      if ($("#appLoading")) $("#appLoading").hidden = true;
     }
   }
   $("#btnRetry").addEventListener("click", loadAll);
@@ -133,7 +151,7 @@
   /* =========================================================
      CHUYỂN MỤC
      ========================================================= */
-  const ORDER = ["products", "feedback", "trash", "settings"];
+  const ORDER = ["products", "orders", "feedback", "trash"];
   const scrollPos = {};
   let current = null;
   function go(view) {
@@ -150,9 +168,39 @@
     });
     window.scrollTo(0, scrollPos[view] || 0);
     if (view === "trash") renderTrash();
+    if (view === "orders") renderOrders();
+    // Cập nhật tiêu đề + phụ đề mobile
+    const titles = { products: "Sản phẩm", orders: "Đơn hàng", feedback: "Feedback", trash: "Đã xoá" };
+    const subIds = { products: "pSummary", orders: "oSummary", feedback: "fSummary", trash: "tSummary" };
+    const mtopTitle = $("#mtopTitle");
+    const mtopSub = $("#mtopSub");
+    if (mtopTitle) mtopTitle.textContent = titles[view] || view;
+    if (mtopSub) {
+      const src = $("#" + subIds[view]);
+      mtopSub.textContent = src ? src.textContent : "";
+    }
     try { history.replaceState(null, "", "#" + view); } catch (e) { }
   }
-  $$(".menu__item").forEach((b) => b.addEventListener("click", () => go(b.dataset.view)));
+  $$(".menu__item").forEach((b) => b.addEventListener("click", () => { go(b.dataset.view); closeDrawer(); }));
+
+  // ---- Hamburger Drawer Toggle ----
+  function openDrawer() {
+    const side = $(".side"), overlay = $("#drawerOverlay");
+    if (side) side.classList.add("is-open");
+    if (overlay) overlay.classList.add("is-open");
+    document.body.classList.add("no-scroll");
+  }
+  function closeDrawer() {
+    const side = $(".side"), overlay = $("#drawerOverlay");
+    if (side) side.classList.remove("is-open");
+    if (overlay) overlay.classList.remove("is-open");
+    document.body.classList.remove("no-scroll");
+  }
+  const burgerBtn = $("#burgerBtn");
+  if (burgerBtn) burgerBtn.addEventListener("click", openDrawer);
+  const drawerOverlay = $("#drawerOverlay");
+  if (drawerOverlay) drawerOverlay.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
 
   // Vuốt ngang để chuyển mục (điện thoại / iPad)
   (() => {
@@ -175,17 +223,45 @@
   /* =========================================================
      SẢN PHẨM
      ========================================================= */
+  // Đồng bộ phụ đề vào thanh trên mobile
+  const subIds = { products: "pSummary", orders: "oSummary", feedback: "fSummary", trash: "tSummary" };
+  function syncMtopSub() {
+    const el = $("#mtopSub");
+    if (!el || !current) return;
+    const src = $("#" + (subIds[current] || ""));
+    el.textContent = src ? src.textContent : "";
+  }
   const isSold = (p) => p.status === "sold" || (Number(p.stock) || 0) <= 0;
   function summary() {
-    $("#pSummary").textContent = `${products.length} card · ${products.filter((p) => !isSold(p)).length} còn hàng`;
+    const allCount = products.length;
+    const availableCount = products.filter((p) => !isSold(p)).length;
+    const soldCount = products.filter((p) => isSold(p)).length;
+    $("#pSummary").textContent = `${allCount} card · ${availableCount} còn hàng`;
+    syncMtopSub();
+    if ($("#pCountAll")) $("#pCountAll").textContent = allCount;
+    if ($("#pCountAvailable")) $("#pCountAvailable").textContent = availableCount;
+    if ($("#pCountSold")) $("#pCountSold").textContent = soldCount;
   }
+  let currentProductFilter = "all";
   function renderProducts() {
     const q = $("#pSearch").value.trim().toLowerCase();
     summary();
-    const empty = !products.length;
-    $("#productEmpty").hidden = !empty || !!q;
-    $("#productList").innerHTML = products
-      .filter((p) => !q || (p.name || "").toLowerCase().includes(q))
+
+    const filtered = products.filter((p) => {
+      if (q && !(p.name || "").toLowerCase().includes(q)) return false;
+      if (currentProductFilter === "available" && isSold(p)) return false;
+      if (currentProductFilter === "sold" && !isSold(p)) return false;
+      return true;
+    });
+    const empty = !filtered.length;
+    $("#productEmpty").hidden = !empty;
+    // Sắp xếp: còn hàng lên trên, đã bán xuống dưới
+    filtered.sort((a, b) => {
+      const aSold = isSold(a) ? 1 : 0;
+      const bSold = isSold(b) ? 1 : 0;
+      return aSold - bSold;
+    });
+    $("#productList").innerHTML = filtered
       .map((p) => {
         const sold = isSold(p);
         return `
@@ -215,6 +291,16 @@
   }
   $("#pSearch").addEventListener("input", renderProducts);
 
+  // Tab lọc trạng thái sản phẩm
+  $("#productFilterTabs")?.addEventListener("click", (e) => {
+    const tab = e.target.closest(".filter-tab");
+    if (!tab) return;
+    $$("#productFilterTabs .filter-tab").forEach((t) => t.classList.remove("is-active"));
+    tab.classList.add("is-active");
+    currentProductFilter = tab.dataset.pstatus || "all";
+    renderProducts();
+  });
+
   // cập nhật số lượng tại chỗ, gộp nhiều lần bấm thành 1 lần lưu
   const stockTimers = {};
   function patchRow(row, p) {
@@ -236,9 +322,15 @@
     const act = b.dataset.act;
 
     if (act === "plus" || act === "minus") {
+      const prevSold = isSold(p);
       p.stock = Math.max(0, (Number(p.stock) || 0) + (act === "plus" ? 1 : -1));
       p.status = p.stock === 0 ? "sold" : "available";
-      patchRow(row, p);
+      const nowSold = isSold(p);
+      if (currentProductFilter !== "all" && prevSold !== nowSold) {
+        renderProducts();
+      } else {
+        patchRow(row, p);
+      }
       setSave("busy");
       clearTimeout(stockTimers[p.id]);
       stockTimers[p.id] = setTimeout(() => {
@@ -437,11 +529,443 @@
   });
 
   /* =========================================================
+     ĐƠN HÀNG (ORDERS)
+     ========================================================= */
+  let currentOrderFilter = "all";
+  let viewingOrder = null;
+
+  function mergeLocalOrders() {
+    try {
+      const local = JSON.parse(localStorage.getItem("bloomcard_orders") || "[]");
+      local.forEach((lo) => {
+        const id = lo.id || lo.code;
+        if (!id) return;
+        const existing = orders.find((o) => o.id === id);
+        if (!existing) {
+          orders.push({
+            id: id,
+            customer_name: lo.customer_name || lo.name || "Khách hàng",
+            phone: lo.phone || "",
+            email: lo.email || "",
+            street: lo.street || "",
+            ward: lo.ward || "",
+            district: lo.district || "",
+            city: lo.city || "",
+            address: lo.address || "",
+            items: lo.items || [],
+            subtotal: lo.subtotal || lo.total || 0,
+            status: lo.status || "pending",
+            created_at: lo.createdAt || lo.created_at || new Date().toISOString()
+          });
+        }
+      });
+    } catch (e) {}
+  }
+
+  async function loadOrders(isRefresh = false) {
+    const listEl = $("#ordersList");
+    const emptyEl = $("#orderEmpty");
+    if (listEl && (!orders.length || isRefresh)) {
+      listEl.innerHTML = '<div class="state-box state-box--list"><span class="spinner"></span>Đang tải danh sách đơn hàng…</div>';
+      if (emptyEl) emptyEl.hidden = true;
+    }
+    try {
+      if (sb) {
+        const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
+        if (!error && data) {
+          orders = data;
+        }
+      }
+    } catch (e) {
+      console.warn("Không tải được đơn từ Supabase:", e);
+    }
+    mergeLocalOrders();
+    renderOrders();
+  }
+
+  function getStatusInfo(status) {
+    switch (status) {
+      case "completed":
+        return { label: "Đã hoàn thành", cls: "order-pill--completed" };
+      case "cancelled":
+        return { label: "Đã hủy", cls: "order-pill--cancelled" };
+      case "pending":
+      default:
+        return { label: "Chờ xử lý", cls: "order-pill--pending" };
+    }
+  }
+
+  function renderOrders() {
+    const q = ($("#oSearch")?.value || "").trim().toLowerCase();
+    const listEl = $("#ordersList");
+    const emptyEl = $("#orderEmpty");
+    const badgeEl = $("#ordersBadge");
+    const summaryEl = $("#oSummary");
+
+    // Đếm số lượng
+    const totalAll = orders.length;
+    const totalPending = orders.filter((o) => o.status === "pending" || !o.status).length;
+    const totalCompleted = orders.filter((o) => o.status === "completed").length;
+    const totalCancelled = orders.filter((o) => o.status === "cancelled").length;
+
+    if ($("#countAll")) $("#countAll").textContent = totalAll;
+    if ($("#countPending")) $("#countPending").textContent = totalPending;
+    if ($("#countCompleted")) $("#countCompleted").textContent = totalCompleted;
+    if ($("#countCancelled")) $("#countCancelled").textContent = totalCancelled;
+
+    if (badgeEl) {
+      badgeEl.hidden = totalPending === 0;
+      badgeEl.textContent = totalPending;
+    }
+
+    if (summaryEl) {
+      summaryEl.textContent = `${totalAll} đơn hàng · ${totalPending} chờ xử lý · ${totalCompleted} hoàn thành`;
+      syncMtopSub();
+    }
+
+    // Lọc theo tab
+    let filtered = orders.filter((o) => {
+      const st = o.status || "pending";
+      if (currentOrderFilter === "pending" && st !== "pending") return false;
+      if (currentOrderFilter === "completed" && st !== "completed") return false;
+      if (currentOrderFilter === "cancelled" && st !== "cancelled") return false;
+      return true;
+    });
+
+    // Tìm kiếm
+    if (q) {
+      filtered = filtered.filter((o) => {
+        const id = (o.id || "").toLowerCase();
+        const name = (o.customer_name || o.name || "").toLowerCase();
+        const phone = (o.phone || "").toLowerCase();
+        const addr = (o.address || `${o.street || ""} ${o.ward || ""} ${o.district || ""} ${o.city || ""}`).toLowerCase();
+        return id.includes(q) || name.includes(q) || phone.includes(q) || addr.includes(q);
+      });
+    }
+
+    if (!listEl) return;
+    if (emptyEl) emptyEl.hidden = filtered.length > 0;
+
+    listEl.innerHTML = filtered.map((o) => {
+      const st = o.status || "pending";
+      const stInfo = getStatusInfo(st);
+      const isCompleted = st === "completed";
+      const isCancelled = st === "cancelled";
+      const items = Array.isArray(o.items) ? o.items : [];
+      const totalAmount = o.subtotal || o.total || 0;
+
+      // Render danh sách sản phẩm tóm tắt
+      const itemsHtml = items.slice(0, 3).map((it) => `
+        <span class="oitem-prod-badge" title="${esc(it.name)}">
+          <img src="${esc(asset(it.image || "images/card-sample.svg"))}" alt="" class="oitem-prod-img" onerror="this.src='../images/card-sample.svg'" />
+          <span class="oitem-prod-name">${esc(it.name || "Photocard")}</span>
+          <span class="oitem-prod-qty">x${it.qty || 1}</span>
+        </span>
+      `).join("");
+
+      const moreCount = items.length - 3;
+      const moreHtml = moreCount > 0 ? `<span class="oitem-prod-more">+${moreCount} món</span>` : "";
+
+      return `
+        <article class="oitem status-${esc(st)}" data-id="${esc(o.id)}">
+          <!-- Cột 1: Mã đơn & Thời gian -->
+          <div class="oitem__header">
+            <div class="oitem__id-wrap">
+              <strong class="oitem__id">#${esc(o.id)}</strong>
+            </div>
+            <span class="oitem__time">${ago(o.created_at || new Date())}</span>
+          </div>
+
+          <!-- Cột 2: Sản phẩm -->
+          <div class="oitem__products">
+            ${itemsHtml || '<span class="muted msg-code">Không có chi tiết sản phẩm</span>'}
+            ${moreHtml}
+          </div>
+
+          <!-- Cột 3: Số tiền -->
+          <div class="oitem__total">
+            <span class="oitem__total-label">Số tiền</span>
+            <b class="oitem__amount">${fmt(totalAmount)}</b>
+          </div>
+
+          <!-- Cột 4: Nút hoàn thành, hủy, xem chi tiết (không có icon) -->
+          <div class="oitem__actions">
+            <button type="button" class="btn btn--sm btn--complete" data-act="complete" ${isCompleted ? "disabled" : ""} title="Hoàn thành đơn">
+              ${isCompleted ? "Đã xong" : "Hoàn thành"}
+            </button>
+            <button type="button" class="btn btn--sm btn--cancel ${isCancelled ? "is-cancelled" : ""}" data-act="cancel" title="${isCancelled ? "Ấn đúp để xóa đơn" : "Ấn 1 lần để hủy, ấn đúp để xóa đơn"}">
+              ${isCancelled ? "Đã hủy" : "Hủy"}
+            </button>
+            <button type="button" class="btn btn--sm btn--detail" data-act="detail" title="Xem chi tiết đơn hàng">
+              Xem chi tiết
+            </button>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  /* =========================================================
+     GỬI EMAIL XÁC NHẬN ĐƠN HÀNG QUA GOOGLE APPS SCRIPT
+     ========================================================= */
+  const APPS_SCRIPT_MAILER_URL = "https://script.google.com/macros/s/AKfycbzSIz1hJ_FqW4rkF5E4A81dKqsRGn5yCxHBCneJzo6-qqYUQFvT5c1F8WbcHGhfhheNMw/exec";
+
+  async function sendOrderConfirmationEmail(order) {
+    const email = (order.email || "").trim();
+    if (!email || !email.includes("@") || email.includes("khachhang@bloomcard.vn")) {
+      return { sent: false, reason: "no_email" };
+    }
+
+    try {
+      const payload = {
+        id: order.id || order.code,
+        customer_name: order.customer_name || order.name,
+        name: order.name || order.customer_name,
+        phone: order.phone,
+        email: email,
+        street: order.street,
+        ward: order.ward,
+        district: order.district,
+        city: order.city,
+        address: order.address || [order.street, order.ward, order.district, order.city].filter(Boolean).join(", "),
+        items: order.items || [],
+        total: order.total || order.subtotal || 0,
+        subtotal: order.subtotal || order.total || 0
+      };
+
+      await fetch(APPS_SCRIPT_MAILER_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      return { sent: true, email: email };
+    } catch (err) {
+      console.warn("Lỗi gửi email xác nhận:", err);
+      return { sent: false, error: err };
+    }
+  }
+
+  async function updateOrderStatus(orderId, newStatus) {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+    order.status = newStatus;
+    if (newStatus === "completed") order.completed_at = new Date().toISOString();
+    if (newStatus === "cancelled") order.cancelled_at = new Date().toISOString();
+
+    renderOrders();
+
+    // Cập nhật Supabase
+    try {
+      if (sb) {
+        await sb.from("orders").update({
+          status: newStatus,
+          ...(newStatus === "completed" ? { completed_at: order.completed_at } : {}),
+          ...(newStatus === "cancelled" ? { cancelled_at: order.cancelled_at } : {})
+        }).eq("id", orderId);
+      }
+    } catch (e) {
+      console.warn("Lỗi cập nhật trạng thái đơn trên Supabase:", e);
+    }
+
+    // Cập nhật localStorage
+    try {
+      const local = JSON.parse(localStorage.getItem("bloomcard_orders") || "[]");
+      const target = local.find((lo) => (lo.id || lo.code) === orderId);
+      if (target) {
+        target.status = newStatus;
+        localStorage.setItem("bloomcard_orders", JSON.stringify(local));
+      }
+    } catch (e) {}
+
+    // Tự động gửi email xác nhận đơn hàng khi bấm Hoàn thành
+    if (newStatus === "completed") {
+      const mailRes = await sendOrderConfirmationEmail(order);
+      if (mailRes.sent) {
+        toast(`Đã hoàn thành đơn #${orderId} & gửi email xác nhận cho khách!`);
+      } else {
+        toast(`Đã hoàn thành đơn #${orderId} (Khách không cung cấp email)`);
+      }
+    } else {
+      toast(`Đã hủy đơn #${orderId}`);
+    }
+  }
+
+  async function deleteOrder(orderId) {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+
+    // 1. Xóa khỏi danh sách bộ nhớ và hiển thị ngay
+    orders = orders.filter((o) => o.id !== orderId);
+    renderOrders();
+
+    // 2. Xóa khỏi Supabase
+    try {
+      if (sb) {
+        await sb.from("orders").delete().eq("id", orderId);
+      }
+    } catch (e) {
+      console.warn("Lỗi xóa đơn trên Supabase:", e);
+    }
+
+    // 3. Xóa khỏi localStorage
+    try {
+      const local = JSON.parse(localStorage.getItem("bloomcard_orders") || "[]");
+      const filtered = local.filter((lo) => (lo.id || lo.code) !== orderId);
+      localStorage.setItem("bloomcard_orders", JSON.stringify(filtered));
+    } catch (e) {}
+
+    toast(`Đã xóa đơn hàng #${orderId}`);
+  }
+
+  function openOrderDetail(order) {
+    viewingOrder = order;
+
+    $("#odModalCode").textContent = "#" + order.id;
+
+    const dateStr = order.created_at ? new Date(order.created_at).toLocaleString("vi-VN") : "--";
+    if ($("#odModalDate")) $("#odModalDate").textContent = `Đặt lúc: ${dateStr}`;
+
+    if ($("#odCustomerName")) $("#odCustomerName").textContent = order.customer_name || order.name || "--";
+    if ($("#odCustomerPhone")) $("#odCustomerPhone").textContent = order.phone || "--";
+    if ($("#odCustomerEmail")) $("#odCustomerEmail").textContent = order.email || "Không có";
+
+    // Địa chỉ đầy đủ
+    const fullAddress = order.address || [order.street, order.ward, order.district, order.city].filter(Boolean).join(", ") || "--";
+    if ($("#odCustomerAddress")) $("#odCustomerAddress").textContent = fullAddress;
+
+    // Danh sách sản phẩm chi tiết
+    const items = Array.isArray(order.items) ? order.items : [];
+    const listEl = $("#odProductsList");
+    if (listEl) {
+      if (items.length > 0) {
+        listEl.innerHTML = items.map((it) => {
+          const itemPrice = Number(it.price) || 0;
+          const itemQty = Number(it.qty) || 1;
+          const itemSub = itemPrice * itemQty;
+          return `
+            <div class="od-prod-row">
+              <img src="${esc(asset(it.image || "images/card-sample.svg"))}" alt="" class="od-prod-img" onerror="this.src='../images/card-sample.svg'" />
+              <div class="od-prod-info">
+                <h4>${esc(it.name || "Photocard")}</h4>
+                <span>Đơn giá: ${fmt(itemPrice)}</span>
+              </div>
+              <div class="od-prod-qty">SL: <b>${itemQty}</b></div>
+              <div class="od-prod-sub">${fmt(itemSub)}</div>
+            </div>
+          `;
+        }).join("");
+      } else {
+        listEl.innerHTML = '<p class="msg-code">Không có chi tiết sản phẩm.</p>';
+      }
+    }
+
+    const total = order.subtotal || order.total || 0;
+    if ($("#odSubtotalVal")) $("#odSubtotalVal").textContent = fmt(total);
+    if ($("#odTotalVal")) $("#odTotalVal").textContent = fmt(total);
+
+    openModal("#orderModal");
+  }
+
+  // Quản lý bấm đúp (double-click) vào nút HỦY để xóa đơn
+  let cancelTimer = null;
+  let lastCancelId = null;
+
+  // Lắng nghe dblclick trên danh sách đơn hàng
+  $("#ordersList")?.addEventListener("dblclick", async (e) => {
+    const btn = e.target.closest('[data-act="cancel"]');
+    if (!btn) return;
+    const row = btn.closest(".oitem");
+    if (!row) return;
+    const id = row.dataset.id;
+    if (!id) return;
+
+    if (cancelTimer) {
+      clearTimeout(cancelTimer);
+      cancelTimer = null;
+      lastCancelId = null;
+    }
+
+    await deleteOrder(id);
+  });
+
+  // Sự kiện danh sách đơn hàng (click)
+  $("#ordersList")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const row = btn.closest(".oitem");
+    if (!row) return;
+    const id = row.dataset.id;
+    const order = orders.find((o) => o.id === id);
+    if (!order) return;
+
+    const act = btn.dataset.act;
+    if (act === "complete") {
+      await updateOrderStatus(id, "completed");
+    } else if (act === "cancel") {
+      // Nếu bấm lần 2 liên tiếp nhanh (ấn đúp)
+      if (cancelTimer && lastCancelId === id) {
+        clearTimeout(cancelTimer);
+        cancelTimer = null;
+        lastCancelId = null;
+        await deleteOrder(id);
+        return;
+      }
+
+      // Đơn đã hủy từ trước: nếu bấm 1 lần thì chỉ ghi nhớ để chờ xem có ấn đúp xóa không
+      if (order.status === "cancelled") {
+        lastCancelId = id;
+        cancelTimer = setTimeout(() => {
+          cancelTimer = null;
+          lastCancelId = null;
+        }, 320);
+        return;
+      }
+
+      // Đơn chưa hủy: chờ 280ms để phân biệt bấm 1 lần (hủy) hay ấn đúp (xóa)
+      lastCancelId = id;
+      cancelTimer = setTimeout(async () => {
+        cancelTimer = null;
+        lastCancelId = null;
+        await updateOrderStatus(id, "cancelled");
+      }, 280);
+    } else if (act === "detail") {
+      openOrderDetail(order);
+    }
+  });
+
+  // Tìm kiếm đơn hàng
+  $("#oSearch")?.addEventListener("input", renderOrders);
+
+  // Tab lọc trạng thái đơn hàng
+  $("#orderFilterTabs")?.addEventListener("click", (e) => {
+    const tab = e.target.closest(".filter-tab");
+    if (!tab) return;
+    $$("#orderFilterTabs .filter-tab").forEach((t) => t.classList.remove("is-active"));
+    tab.classList.add("is-active");
+    currentOrderFilter = tab.dataset.status || "all";
+    renderOrders();
+  });
+
+  // Nút tải lại danh sách đơn hàng
+  $("#btnRefreshOrders")?.addEventListener("click", async () => {
+    const btn = $("#btnRefreshOrders");
+    if (btn) btn.disabled = true;
+    toast("Đang tải lại danh sách đơn hàng…");
+    await loadOrders(true);
+    if (btn) btn.disabled = false;
+    toast("Đã cập nhật đơn hàng mới nhất!");
+  });
+
+
+  /* =========================================================
      FEEDBACK
      ========================================================= */
   function renderFeedback() {
     const F = feedbacks;
     $("#fSummary").textContent = `${F.length} ảnh đang hiện trên web`;
+    syncMtopSub();
     $("#fbEmpty").hidden = F.length > 0;
     $("#fbList").innerHTML = F.map((f, i) => `
       <figure class="fitem" data-id="${esc(f.id)}">
@@ -530,6 +1054,7 @@
     const n = trash.length;
     $("#trashBadge").hidden = !n; $("#trashBadge").textContent = n;
     $("#tSummary").textContent = n ? `${n} mục · bấm Khôi phục để đưa lại lên web` : "Nơi giữ những gì bạn đã xoá";
+    syncMtopSub();
     $("#trashEmpty").hidden = n > 0;
     $("#btnEmptyTrash").hidden = !n;
     $("#trashList").innerHTML = trash.map((t) => {
@@ -614,38 +1139,49 @@
 
   function updateMaintUI() {
     const toggle = $("#maintToggle");
-    const status = $("#maintStatus");
-    const text = $("#maintText");
-    if (toggle) toggle.checked = maintMode;
-    if (status) status.classList.toggle("is-maint", maintMode);
-    if (text) text.textContent = maintMode
-      ? "Trang web đang bảo trì — khách không thể truy cập"
-      : "Trang web đang hoạt động bình thường";
+    const toggleMob = $("#maintToggleMobile");
+    const sideMaint = $("#sideMaint");
+    const mtopMaint = $(".mtop-maint");
+
+    if (toggle) {
+      toggle.checked = maintMode;
+      toggle.title = maintMode ? "Đang BẬT bảo trì (bấm để tắt)" : "Đang TẮT bảo trì (bấm để bật)";
+    }
+    if (toggleMob) {
+      toggleMob.checked = maintMode;
+      toggleMob.title = maintMode ? "Đang BẬT bảo trì (bấm để tắt)" : "Đang TẮT bảo trì (bấm để bật)";
+    }
+    if (sideMaint) sideMaint.classList.toggle("is-active", maintMode);
+    if (mtopMaint) mtopMaint.classList.toggle("is-active", maintMode);
   }
 
-  const maintToggle = $("#maintToggle");
-  if (maintToggle) {
-    maintToggle.addEventListener("change", async (e) => {
-      const on = e.target.checked;
-      e.target.disabled = true;
-      try {
-        await run(async () => {
-          const { error } = await sb.from("site_settings")
-            .upsert({ key: "maintenance_mode", value: on ? "true" : "false", updated_at: new Date().toISOString() },
-                    { onConflict: "key" });
-          if (error) throw error;
-        });
-        maintMode = on;
-        updateMaintUI();
-        toast(on ? "Đã bật chế độ bảo trì" : "Đã tắt chế độ bảo trì");
-      } catch (err) {
-        e.target.checked = maintMode;
-        updateMaintUI();
-      } finally {
-        e.target.disabled = false;
-      }
-    });
+  async function handleMaintToggle(e) {
+    const on = e.target.checked;
+    const t1 = $("#maintToggle");
+    const t2 = $("#maintToggleMobile");
+    if (t1) t1.disabled = true;
+    if (t2) t2.disabled = true;
+
+    try {
+      await run(async () => {
+        const { error } = await sb.from("site_settings")
+          .upsert({ key: "maintenance_mode", value: on ? "true" : "false", updated_at: new Date().toISOString() },
+                  { onConflict: "key" });
+        if (error) throw error;
+      });
+      maintMode = on;
+      updateMaintUI();
+      toast(on ? "Đã BẬT bảo trì — website đang tạm đóng" : "Đã TẮT bảo trì — website hoạt động bình thường");
+    } catch (err) {
+      updateMaintUI();
+    } finally {
+      if (t1) t1.disabled = false;
+      if (t2) t2.disabled = false;
+    }
   }
+
+  $("#maintToggle")?.addEventListener("change", handleMaintToggle);
+  $("#maintToggleMobile")?.addEventListener("change", handleMaintToggle);
 
   /* =========================================================
      POPUP XOÁ + MODAL + TOAST
@@ -747,7 +1283,7 @@
     $("#accAvatar").textContent = (email[0] || "A").toUpperCase();
     const start = (location.hash || "#products").slice(1);
     current = null;
-    go(["feedback", "trash"].includes(start) ? start : "products");
+    go(["orders", "feedback", "trash"].includes(start) ? start : "products");
     loadAll();
     loadMaintenance();
   }

@@ -19,7 +19,7 @@
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=1790679200" />
-  <link rel="stylesheet" href="css/cart.css?v=1790679300" />
+  <link rel="stylesheet" href="css/cart.css?v=1790930300" />
 </head>
 
 <body class="cart-page-body">
@@ -62,9 +62,9 @@
 
       <!-- Hiển thị khi giỏ hàng trống -->
       <div class="cart-empty" id="cartEmpty" style="display: none;">
-        <div class="cart-empty__icon">🛍️</div>
-        <p class="cart-empty__text">Giỏ hàng của bạn đang trống</p>
-        <a href="index.html#products" class="btn btn--small">Xem sản phẩm ngay</a>
+        <p class="cart-empty__title">Giỏ hàng của bạn đang trống</p>
+        <p class="cart-empty__desc">Hãy dạo quanh bộ sưu tập photocard và chọn những món bạn yêu thích nhé!</p>
+        <a href="index.html#products" class="cart-empty__btn">Xem sản phẩm ngay</a>
       </div>
     </div>
   </main>
@@ -176,7 +176,7 @@
 
           <div class="ck-qr-card">
             <div class="ck-qr-header">QUÉT ĐỂ THANH TOÁN</div>
-                        <div class="ck-qr-image" id="ckQRImage">
+            <div class="ck-qr-image" id="ckQRImage">
               <img id="ckQRImg" alt="Mã QR thanh toán" style="display:none;" />
               <div class="ck-qr-fallback" id="ckQRFallback" style="display:none;">
                 <p>Không tải được mã QR.</p>
@@ -212,7 +212,8 @@
 
           <div class="ck-qr-help">
             Nếu bạn cần hỗ trợ, liên hệ
-            <a href="https://www.facebook.com/share/1E9iBfy95s/?mibextid=wwXIfr" target="_blank" rel="noopener">Messenger</a>
+            <a href="https://www.facebook.com/share/1E9iBfy95s/?mibextid=wwXIfr" target="_blank"
+              rel="noopener">Messenger</a>
           </div>
 
           <!-- Mobile: nút xác nhận -->
@@ -226,16 +227,24 @@
 
   <!-- ===== Modal Đặt hàng thành công ===== -->
   <div class="ck-modal" id="successModal" aria-hidden="true" role="dialog">
-    <div class="ck-modal__dialog">
+    <div class="ck-modal__dialog ck-modal__dialog--success">
+      <button type="button" class="ck-modal__close" id="successClose" aria-label="Đóng">&times;</button>
       <div class="ck-success">
-        <div class="ck-success__badge">✿</div>
-        <h2>Đặt hàng thành công!</h2>
-        <div class="ck-success__code" id="successCode">#BC123456</div>
-        <p>Cảm ơn bạn đã ủng hộ BloomCard! Shop sẽ kiểm tra chuyển khoản và đóng gói gửi đi trong 24h.<br /><strong>Phí
-            vận chuyển sẽ được tính khi shop xác nhận đơn.</strong></p>
-        <div class="ck-success__btns">
-          <a href="#" target="_blank" class="btn-checkout" id="successMsgLink">Nhắn tin shop qua Messenger</a>
-          <a href="index.html" class="btn-secondary" style="text-align: center;">Quay lại trang chủ</a>
+        <div class="ck-success__icon-wrap">
+          <svg class="ck-success__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <h2 class="ck-success__title">Đặt hàng thành công!</h2>
+        <div class="ck-success__code-wrap">
+          Mã đơn: <strong id="successCode">#BC123456</strong>
+        </div>
+        <div class="ck-success__box">
+          <div class="ck-success__row">Shop sẽ kiểm tra và đóng gói gửi đi trong <strong>24h</strong>.</div>
+          <div class="ck-success__row">Phí vận chuyển sẽ được bạn thanh toán khi bạn nhận hàng.</div>
+        </div>
+        <div class="ck-success__action">
+          <a href="index.html" class="ck-success__btn" id="successHomeBtn">Tiếp tục mua sắm</a>
         </div>
       </div>
     </div>
@@ -248,8 +257,10 @@
     </div>
   </footer>
 
+  <script src="js/vendor/supabase.js"></script>
+  <script src="js/supabase-config.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/cart.js?v=1790679300"></script>
+  <script src="js/cart.js?v=1790930100"></script>
 </body>
 
 </html>

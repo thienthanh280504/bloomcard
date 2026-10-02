@@ -390,6 +390,28 @@
         if (e.target === checkoutModal) closeModal();
       });
 
+      // ---------- Đóng modal thành công ----------
+      const successModal = document.getElementById("successModal");
+      const successClose = document.getElementById("successClose");
+      const closeSuccess = () => {
+        if (successModal) {
+          successModal.classList.remove("is-open");
+          successModal.setAttribute("aria-hidden", "true");
+        }
+        window.location.href = "index.html";
+      };
+      if (successClose) successClose.addEventListener("click", closeSuccess);
+      if (successModal) {
+        successModal.addEventListener("click", (e) => {
+          if (e.target === successModal) closeSuccess();
+        });
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && successModal && successModal.classList.contains("is-open")) {
+          closeSuccess();
+        }
+      });
+
       // ---------- Mobile: Tiếp theo → bước 2 ----------
       if (btnNext) {
         btnNext.addEventListener("click", () => {
@@ -452,7 +474,7 @@
       });
 
       // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
-      function handleSubmit() {
+      async function handleSubmit() {
         if (!validateForm()) {
           // Nếu đang ở bước 2 (mobile), quay lại bước 1 để user sửa
           if (isMobile()) {
@@ -461,9 +483,21 @@
           return;
         }
 
+        const submitBtns = [
+          checkoutForm ? checkoutForm.querySelector("button[type='submit']") : null,
+          document.getElementById("ckBtnConfirmMobile")
+        ].filter(Boolean);
+
+        submitBtns.forEach((b) => {
+          b.disabled = true;
+          b.dataset.prevText = b.textContent;
+          b.textContent = "Đang xử lý...";
+        });
+
         const name = (document.getElementById("ckName")?.value || "").trim();
         const phone = (document.getElementById("ckPhone")?.value || "").trim();
-        const email = (document.getElementById("ckEmail")?.value || "").trim();
+        const rawEmail = (document.getElementById("ckEmail")?.value || "").trim();
+        const email = rawEmail || "khachhang@bloomcard.vn";
         const street = (document.getElementById("ckStreet")?.value || "").trim();
         const ward = (document.getElementById("ckWard")?.value || "").trim();
         const district = (document.getElementById("ckDistrict")?.value || "").trim();
@@ -474,23 +508,79 @@
         const total = Cart.getTotal();
 
         const order = {
+          id: currentOrderCode,
           code: currentOrderCode,
+          customer_name: name,
           name,
           phone,
           email,
+          street,
+          ward,
+          district,
+          city,
           address,
           items,
+          subtotal: total,
           total,
+          status: "pending",
           shippingMethod: "Chuyển khoản ngân hàng (VietinBank)",
           createdAt: new Date().toISOString()
         };
 
-        // Lưu vào localStorage
+        // 1. Lưu vào localStorage (backup / test local)
         try {
           const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
           orders.unshift(order);
           localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
         } catch (err) {}
+
+        // 2. Lưu vào Supabase orders table
+        try {
+          if (window.sb) {
+            await window.sb.from("orders").insert({
+              id: currentOrderCode,
+              customer_name: name,
+              phone: phone,
+              email: email,
+              street: street,
+              ward: ward,
+              district: district,
+              city: city,
+              items: items,
+              subtotal: total,
+              status: "pending"
+            });
+          } else if (window.SUPABASE_URL && window.SUPABASE_KEY) {
+            await fetch(`${window.SUPABASE_URL}/rest/v1/orders`, {
+              method: "POST",
+              headers: {
+                apikey: window.SUPABASE_KEY,
+                Authorization: `Bearer ${window.SUPABASE_KEY}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                id: currentOrderCode,
+                customer_name: name,
+                phone: phone,
+                email: email,
+                street: street,
+                ward: ward,
+                district: district,
+                city: city,
+                items: items,
+                subtotal: total,
+                status: "pending"
+              })
+            });
+          }
+        } catch (sbErr) {
+          console.warn("Lỗi đồng bộ đơn hàng lên Supabase:", sbErr);
+        }
+
+        submitBtns.forEach((b) => {
+          b.disabled = false;
+          if (b.dataset.prevText) b.textContent = b.dataset.prevText;
+        });
 
         // Xoá giỏ hàng
         Cart.clear();
@@ -499,22 +589,8 @@
         // Hiển thị modal thành công
         const successModal = document.getElementById("successModal");
         const successCode = document.getElementById("successCode");
-        const successMsgLink = document.getElementById("successMsgLink");
 
         if (successCode) successCode.textContent = "#" + currentOrderCode;
-
-        // Link nhắn Messenger kèm nội dung đơn hàng
-        if (successMsgLink) {
-          const itemsListText = items.map((it) => `- ${it.name}`).join("\n");
-          const msg = `Chào BloomCard, mình vừa đặt đơn #${currentOrderCode} và đã chuyển khoản:\n${itemsListText}\nTổng tiền: ${formatPrice(total)}\nĐịa chỉ: ${address} - SĐT: ${phone}\nShop xác nhận đơn giúp mình nha!`;
-          const fbUrl = (window.SHOP_CONFIG && window.SHOP_CONFIG.messengerUrl) || "https://m.me/bloomcard";
-          successMsgLink.href = fbUrl;
-          successMsgLink.onclick = () => {
-            if (navigator.clipboard) {
-              navigator.clipboard.writeText(msg).catch(() => {});
-            }
-          };
-        }
 
         if (successModal) {
           successModal.classList.add("is-open");
