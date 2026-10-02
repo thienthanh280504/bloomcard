@@ -12,9 +12,6 @@
   const BANK_ACCOUNT = "104882437853";
   const BANK_NAME = "PHAM THI THAO VI";
 
-  /* ---- Google Apps Script Mailer (Thông báo đơn hàng & email) ---- */
-  const APPS_SCRIPT_MAILER_URL = "https://script.google.com/macros/s/AKfycbzSIz1hJ_FqW4rkF5E4A81dKqsRGn5yCxHBCneJzo6-qqYUQFvT5c1F8WbcHGhfhheNMw/exec";
-
   const formatPrice = (n) => Number(n || 0).toLocaleString("vi-VN") + "đ";
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -622,36 +619,6 @@
           }
         } catch (sbErr) {
           console.warn("Lỗi đồng bộ đơn hàng lên Supabase:", sbErr);
-        }
-
-        // 3. Gửi thông báo đơn hàng mới về Gmail của chủ shop qua Google Apps Script
-        try {
-          fetch(APPS_SCRIPT_MAILER_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              type: "new_order",
-              id: currentOrderCode,
-              code: currentOrderCode,
-              customer_name: name,
-              name: name,
-              phone: phone,
-              email: rawEmail || "",
-              street: street,
-              ward: ward,
-              district: district,
-              city: city,
-              address: address,
-              items: items,
-              subtotal: total,
-              total: total
-            })
-          }).catch((mailErr) => {
-            console.warn("Lỗi gửi thông báo đơn hàng mới qua Apps Script:", mailErr);
-          });
-        } catch (mailEx) {
-          console.warn("Lỗi kích hoạt gửi thông báo đơn:", mailEx);
         }
 
         submitBtns.forEach((b) => {
