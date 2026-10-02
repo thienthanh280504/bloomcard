@@ -752,7 +752,8 @@
     if (!sb || !order || !Array.isArray(order.items) || !order.items.length) return;
 
     // 1. Chuyển sang Hoàn thành (completed): Trừ kho trên Supabase & đánh dấu đã bán nếu stock <= 0
-    if (toStatus === "completed" && fromStatus !== "completed") {
+    // Chỉ trừ nếu đơn này chưa từng có completed_at (chưa bị trừ kho)
+    if (toStatus === "completed" && !order.completed_at) {
       for (const item of order.items) {
         if (!item || !item.id) continue;
         const buyQty = Number(item.qty) || 1;
@@ -767,19 +768,23 @@
         }
 
         try {
-          await sb.from("products").update({
-            stock: newStock,
-            status: newStatus
-          }).eq("id", item.id);
+          await run(async () => {
+            const res = await sb.from("products").update({
+              stock: newStock,
+              status: newStatus
+            }).eq("id", item.id);
+            if (res.error) throw res.error;
+          });
         } catch (e) {
           console.warn("Lỗi trừ tồn kho sản phẩm:", item.id, e);
         }
       }
+      order.completed_at = new Date().toISOString();
       renderProducts();
       summary();
     }
-    // 2. Nếu đơn trước đó đã Hoàn thành mà bị Hủy hoặc Xóa: Hoàn lại kho trên Supabase & chuyển thành Còn hàng
-    else if (fromStatus === "completed" && (toStatus === "cancelled" || toStatus === "deleted")) {
+    // 2. Nếu đơn đã từng hoàn thành (có completed_at) mà bị Hủy hoặc Xóa: Hoàn lại kho trên Supabase & chuyển thành Còn hàng
+    else if (order.completed_at && (toStatus === "cancelled" || toStatus === "deleted")) {
       for (const item of order.items) {
         if (!item || !item.id) continue;
         const buyQty = Number(item.qty) || 1;
@@ -793,14 +798,18 @@
         }
 
         try {
-          await sb.from("products").update({
-            stock: restoredStock,
-            status: "available"
-          }).eq("id", item.id);
+          await run(async () => {
+            const res = await sb.from("products").update({
+              stock: restoredStock,
+              status: "available"
+            }).eq("id", item.id);
+            if (res.error) throw res.error;
+          });
         } catch (e) {
           console.warn("Lỗi hoàn trả tồn kho sản phẩm:", item.id, e);
         }
       }
+      order.completed_at = null;
       renderProducts();
       summary();
     }
@@ -813,12 +822,11 @@
     if (prevStatus === newStatus) return;
 
     order.status = newStatus;
-    if (newStatus === "completed") order.completed_at = new Date().toISOString();
     if (newStatus === "cancelled") order.cancelled_at = new Date().toISOString();
 
     renderOrders();
 
-    // Đồng bộ tồn kho sản phẩm tương ứng
+    // Đồng bộ tồn kho sản phẩm tương ứng (cập nhật completed_at nếu thành công)
     await syncOrderStockChange(order, prevStatus, newStatus);
 
     // Cập nhật Supabase
@@ -826,8 +834,8 @@
       if (sb) {
         await sb.from("orders").update({
           status: newStatus,
-          ...(newStatus === "completed" ? { completed_at: order.completed_at } : {}),
-          ...(newStatus === "cancelled" ? { cancelled_at: order.cancelled_at } : {})
+          completed_at: order.completed_at || null,
+          cancelled_at: order.cancelled_at || null
         }).eq("id", orderId);
       }
     } catch (e) {
@@ -861,8 +869,8 @@
     const order = orders.find((o) => o.id === orderId);
     if (!order) return;
 
-    // Nếu đơn đã hoàn thành mà bị xóa, hoàn lại tồn kho
-    if (order.status === "completed") {
+    // Nếu đơn đã từng hoàn thành (đã bị trừ kho) mà bị xóa, hoàn lại tồn kho
+    if (order.completed_at) {
       await syncOrderStockChange(order, "completed", "deleted");
     }
 
