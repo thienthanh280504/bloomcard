@@ -724,6 +724,7 @@
 
     try {
       const payload = {
+        type: "order_confirmation",
         id: order.id || order.code,
         customer_name: order.customer_name || order.name,
         name: order.name || order.customer_name,
