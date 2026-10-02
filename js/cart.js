@@ -507,6 +507,50 @@
         const items = Cart.getItems();
         const total = Cart.getTotal();
 
+        // Kiểm tra tồn kho thực tế trên Supabase trước khi tạo đơn
+        try {
+          if (window.sb && items.length > 0) {
+            const itemIds = items.map((it) => it.id);
+            const [prodsRes, pendingOrdersRes] = await Promise.all([
+              window.sb.from("products").select("id, name, stock, status").in("id", itemIds),
+              window.sb.from("orders").select("items").eq("status", "pending")
+            ]);
+
+            if (prodsRes && Array.isArray(prodsRes.data)) {
+              const pendingHeldMap = {};
+              (pendingOrdersRes.data || []).forEach((o) => {
+                (o.items || []).forEach((it) => {
+                  if (it && it.id) {
+                    pendingHeldMap[String(it.id)] = (pendingHeldMap[String(it.id)] || 0) + (Number(it.qty) || 1);
+                  }
+                });
+              });
+
+              for (const it of items) {
+                const prod = prodsRes.data.find((p) => String(p.id) === String(it.id));
+                if (prod) {
+                  const held = pendingHeldMap[String(prod.id)] || 0;
+                  const rawStock = Number(prod.stock) ?? 1;
+                  const available = Math.max(0, rawStock - held);
+                  const isSold = prod.status === "sold" || rawStock <= 0 || available <= 0;
+                  const buyQty = Number(it.qty) || 1;
+
+                  if (isSold || available < buyQty) {
+                    alert(`Rất tiếc, sản phẩm "${it.name}" vừa có khách đặt trước hoặc không còn đủ số lượng.`);
+                    submitBtns.forEach((b) => {
+                      b.disabled = false;
+                      if (b.dataset.prevText) b.textContent = b.dataset.prevText;
+                    });
+                    return;
+                  }
+                }
+              }
+            }
+          }
+        } catch (checkErr) {
+          console.warn("Lỗi kiểm tra hàng tồn trước khi đặt:", checkErr);
+        }
+
         const order = {
           id: currentOrderCode,
           code: currentOrderCode,
