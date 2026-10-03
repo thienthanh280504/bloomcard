@@ -35,7 +35,6 @@
           ${sold
             ? `<span class="product__badge product__badge--sold">Đã bán</span>`
             : p.badge ? `<span class="product__badge">${esc(p.badge)}</span>` : ""}
-          ${hasImage2 ? `<span class="product__badge product__badge--photos" title="Có 2 ảnh">2 ảnh</span>` : ""}
         </div>
       `;
 
