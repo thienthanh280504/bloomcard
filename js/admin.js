@@ -209,7 +209,8 @@
     const main = $(".main");
     main.addEventListener("touchstart", (e) => {
       if (document.body.classList.contains("no-scroll") || $(".confirm")) return;
-      if (e.target.closest("input, select, textarea, .fgrid img")) return;
+      // Bỏ qua nếu đang chạm vào input hoặc nút bấm (tránh nhầm swipe)
+      if (e.target.closest("input, select, textarea, .fgrid img, button, .oitem__actions, .titem__act")) return;
       const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); track = true;
     }, { passive: true });
     main.addEventListener("touchend", (e) => {
@@ -683,37 +684,42 @@
 
       return `
         <article class="oitem status-${esc(st)}" data-id="${esc(o.id)}">
-          <!-- Cột 1: Mã đơn & Thời gian -->
+          <!-- Header: mã đơn + thời gian -->
           <div class="oitem__header">
-            <div class="oitem__id-wrap">
-              <strong class="oitem__id">#${esc(o.id)}</strong>
-            </div>
+            <strong class="oitem__id">#${esc(o.id)}</strong>
             <span class="oitem__time">${ago(o.created_at || new Date())}</span>
           </div>
 
-          <!-- Cột 2: Sản phẩm -->
+          <!-- Sản phẩm -->
           <div class="oitem__products">
-            ${itemsHtml || '<span class="muted msg-code">Không có chi tiết sản phẩm</span>'}
+            ${itemsHtml || '<span class="muted msg-code">Không có chi tiết</span>'}
             ${moreHtml}
           </div>
 
-          <!-- Cột 3: Số tiền -->
-          <div class="oitem__total">
-            <span class="oitem__total-label">Số tiền</span>
+          <!-- Footer: số tiền + nút hành động trên cùng 1 hàng -->
+          <div class="oitem__footer">
             <b class="oitem__amount">${fmt(totalAmount)}</b>
-          </div>
-
-          <!-- Cột 4: Nút hoàn thành, hủy, xem chi tiết (không có icon) -->
-          <div class="oitem__actions">
-            <button type="button" class="btn btn--sm btn--complete" data-act="complete" ${isCompleted ? "disabled" : ""} title="Hoàn thành đơn">
-              ${isCompleted ? "Đã xong" : "Hoàn thành"}
-            </button>
-            <button type="button" class="btn btn--sm btn--cancel ${isCancelled ? "is-cancelled" : ""}" data-act="cancel" title="${isCancelled ? "Ấn đúp để xóa đơn" : "Ấn 1 lần để hủy, ấn đúp để xóa đơn"}">
-              ${isCancelled ? "Đã hủy" : "Hủy"}
-            </button>
-            <button type="button" class="btn btn--sm btn--detail" data-act="detail" title="Xem chi tiết đơn hàng">
-              Xem chi tiết
-            </button>
+            <div class="oitem__actions">
+              <button type="button" class="btn btn--sm btn--complete" data-act="complete"
+                ${isCompleted ? "disabled" : ""} title="${isCompleted ? "Đã hoàn thành" : "Hoàn thành đơn"}"
+                aria-label="Hoàn thành">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ${isCompleted ? "Xong" : "Hoàn thành"}
+              </button>
+              <button type="button"
+                class="btn btn--sm btn--cancel ${isCancelled ? "is-cancelled" : ""}"
+                data-act="cancel"
+                title="${isCancelled ? "Ấn đúp để xóa đơn" : "Hủy đơn (đúp để xóa)"}"
+                aria-label="Hủy">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                ${isCancelled ? "Đã hủy" : "Hủy"}
+              </button>
+              <button type="button" class="btn btn--sm btn--detail" data-act="detail"
+                title="Xem chi tiết đơn hàng" aria-label="Chi tiết">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Chi tiết
+              </button>
+            </div>
           </div>
         </article>
       `;
