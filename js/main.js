@@ -273,8 +273,41 @@
     });
 
     $("#lightboxClose")?.addEventListener("click", close);
+
+    // Vuốt (swipe) chuyển ảnh trên di động / iPad
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let swipedRecently = false;
+
+    lb.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    lb.addEventListener("touchend", (e) => {
+      if (!lb.classList.contains("is-open") || !currentItems.length) return;
+      if (e.changedTouches.length === 1) {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          swipedRecently = true;
+          setTimeout(() => { swipedRecently = false; }, 300);
+          if (dx < 0) {
+            showItem(currentIndex + 1);
+          } else {
+            showItem(currentIndex - 1);
+          }
+        }
+      }
+    }, { passive: true });
+
+    // Bấm vào khoảng trống để đóng lightbox
     lb.addEventListener("click", (e) => {
-      if (e.target === lb || e.target.classList.contains("lightbox__inner")) close();
+      if (swipedRecently) return;
+      if (e.target.closest("img, video, .lightbox__tab, .lightbox__nav")) return;
+      close();
     });
     document.addEventListener("keydown", (e) => {
       if (!lb.classList.contains("is-open")) return;
