@@ -68,6 +68,7 @@
 ${itemsList || "  (Không có thông tin)"}
 
 💰 <b>Tổng thanh toán:</b> <b>${formatPrice(order.total || order.subtotal || 0)}</b>
+🚚 <b>Phí vận chuyển:</b> Khách thanh toán khi nhận hàng
 💳 <b>Phương thức:</b> ${esc(order.shippingMethod || "Chuyển khoản ngân hàng VietinBank")}
 ⏰ <b>Thời gian đặt:</b> ${timeStr}`;
 
