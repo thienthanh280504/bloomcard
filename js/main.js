@@ -179,10 +179,17 @@
         vid.src = item.src;
         vid.hidden = false;
         vid.play().catch(() => {});
+        // Tự động mở fullscreen cho video
+        try {
+          const rfs = vid.requestFullscreen || vid.webkitEnterFullScreen || vid.webkitRequestFullscreen;
+          if (rfs) rfs.call(vid);
+        } catch (_) {}
       } else {
         try { vid.pause(); } catch (_) {}
         vid.removeAttribute("src");
         vid.hidden = true;
+        // Thoát fullscreen nếu đang bật
+        try { if (document.fullscreenElement) document.exitFullscreen(); } catch (_) {}
         img.src = item.src;
         img.hidden = false;
       }

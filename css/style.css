@@ -396,6 +396,9 @@ h1 em, h2 em { color: var(--berry); font-style: italic; }
   border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.5);
   background: #000;
 }
+/* hidden attribute bị CSS display:block đè → ép lại */
+.lightbox img[hidden],
+.lightbox video[hidden] { display: none !important; }
 .lightbox__close {
   position: absolute; top: 20px; right: 24px; z-index: 10;
   background: rgba(255, 255, 255, .9); border: 0; width: 44px; height: 44px;
