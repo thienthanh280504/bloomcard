@@ -19,7 +19,7 @@
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=1790679200" />
-  <link rel="stylesheet" href="css/cart.css?v=1790930300" />
+  <link rel="stylesheet" href="css/cart.css?v=1791026800" />
 </head>
 
 <body class="cart-page-body">
@@ -118,23 +118,29 @@
               <span>ĐỊA CHỈ GIAO HÀNG</span>
             </div>
 
-            <div class="ck-form-group">
-              <label for="ckStreet">Số nhà, tên đường <span class="ck-req">*</span></label>
-              <input type="text" id="ckStreet" required placeholder="123 Nguyễn Trãi" autocomplete="address-line1" />
-            </div>
-            <div class="ck-form-group">
-              <label for="ckWard">Phường / xã <span class="ck-req">*</span></label>
-              <input type="text" id="ckWard" required placeholder="Phường Bến Nghé" />
-            </div>
             <div class="ck-form-row">
               <div class="ck-form-group">
-                <label for="ckDistrict">Quận / huyện <span class="ck-req">*</span></label>
-                <input type="text" id="ckDistrict" required placeholder="Quận 1" />
+                <label for="ckCity">Tỉnh / Thành phố <span class="ck-req">*</span></label>
+                <select id="ckCity" required>
+                  <option value="">-- Chọn Tỉnh / TP --</option>
+                </select>
               </div>
               <div class="ck-form-group">
-                <label for="ckCity">Thành phố / tỉnh <span class="ck-req">*</span></label>
-                <input type="text" id="ckCity" required placeholder="TP. Hồ Chí Minh" />
+                <label for="ckDistrict">Quận / Huyện <span class="ck-req">*</span></label>
+                <select id="ckDistrict" required disabled>
+                  <option value="">-- Chọn Quận / Huyện --</option>
+                </select>
               </div>
+            </div>
+            <div class="ck-form-group">
+              <label for="ckWard">Phường / Xã <span class="ck-req">*</span></label>
+              <select id="ckWard" required disabled>
+                <option value="">-- Chọn Phường / Xã --</option>
+              </select>
+            </div>
+            <div class="ck-form-group">
+              <label for="ckStreet">Số nhà, tên đường <span class="ck-req">*</span></label>
+              <input type="text" id="ckStreet" required placeholder="Ví dụ: 65/7 Trần Văn Dư" autocomplete="address-line1" />
             </div>
 
             <div class="ck-review-box">
@@ -260,7 +266,7 @@
   <script src="js/vendor/supabase.js"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/cart.js?v=1791025500"></script>
+  <script src="js/cart.js?v=1791026800"></script>
 </body>
 
 </html>

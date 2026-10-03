@@ -537,6 +537,7 @@ body.cart-page-body .cart-footer p {
 }
 
 .ck-form-group input,
+.ck-form-group select,
 .ck-form-group textarea {
   width: 100%;
   padding: 10px 14px;
@@ -550,14 +551,33 @@ body.cart-page-body .cart-footer p {
   box-sizing: border-box;
 }
 
+.ck-form-group select {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.ck-form-group select:disabled {
+  background-color: #f7f4f5;
+  cursor: not-allowed;
+  opacity: 0.75;
+  color: #999;
+}
+
 .ck-form-group input:focus,
+.ck-form-group select:focus,
 .ck-form-group textarea:focus {
   outline: none;
   border-color: var(--berry);
   box-shadow: 0 0 0 3px rgba(197, 68, 116, 0.15);
 }
 
-.ck-form-group input.is-error {
+.ck-form-group input.is-error,
+.ck-form-group select.is-error {
   border-color: #e74c3c;
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
 }

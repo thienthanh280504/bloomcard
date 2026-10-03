@@ -68,7 +68,6 @@
 ${itemsList || "  (Không có thông tin)"}
 
 💰 <b>Tổng thanh toán:</b> <b>${formatPrice(order.total || order.subtotal || 0)}</b>
-🚚 <b>Phí vận chuyển:</b> Khách thanh toán khi nhận hàng
 💳 <b>Phương thức:</b> ${esc(order.shippingMethod || "Chuyển khoản ngân hàng VietinBank")}
 ⏰ <b>Thời gian đặt:</b> ${timeStr}`;
 
@@ -337,10 +336,10 @@ ${itemsList || "  (Không có thông tin)"}
         const requiredFields = [
           { id: "ckName", label: "Tên người nhận" },
           { id: "ckPhone", label: "Số điện thoại" },
+          { id: "ckCity", label: "Tỉnh / Thành phố" },
+          { id: "ckDistrict", label: "Quận / Huyện" },
+          { id: "ckWard", label: "Phường / Xã" },
           { id: "ckStreet", label: "Số nhà, tên đường" },
-          { id: "ckWard", label: "Phường / xã" },
-          { id: "ckDistrict", label: "Quận / huyện" },
-          { id: "ckCity", label: "Thành phố / tỉnh" },
         ];
 
         let valid = true;
@@ -524,12 +523,127 @@ ${itemsList || "  (Không có thông tin)"}
         });
       }
 
-      // ---------- Clear error on input ----------
-      checkoutModal.querySelectorAll("input").forEach((inp) => {
+      // ---------- Clear error on input / select change ----------
+      checkoutModal.querySelectorAll("input, select").forEach((inp) => {
         inp.addEventListener("input", () => {
           inp.classList.remove("is-error");
         });
+        inp.addEventListener("change", () => {
+          inp.classList.remove("is-error");
+        });
       });
+
+      // ---------- Địa giới hành chính Việt Nam (Tỉnh -> Quận -> Phường) ----------
+      let vietnamAddressData = [];
+
+      async function loadVietnamAddressData() {
+        if (vietnamAddressData && vietnamAddressData.length > 0) {
+          populateCitySelect();
+          return;
+        }
+        try {
+          const res = await fetch("js/vendor/vietnam-address.json");
+          if (res.ok) {
+            vietnamAddressData = await res.json();
+          }
+        } catch (e) {
+          console.warn("Lỗi đọc vietnam-address.json cục bộ:", e);
+        }
+
+        if (!vietnamAddressData || !vietnamAddressData.length) {
+          try {
+            const res2 = await fetch("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json");
+            if (res2.ok) vietnamAddressData = await res2.json();
+          } catch (err2) {}
+        }
+
+        populateCitySelect();
+      }
+
+      function populateCitySelect() {
+        const citySel = document.getElementById("ckCity");
+        if (!citySel || !vietnamAddressData || !vietnamAddressData.length) return;
+        if (citySel.options.length > 1) return;
+
+        citySel.innerHTML = '<option value="">-- Chọn Tỉnh / TP --</option>';
+        vietnamAddressData.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.Name;
+          opt.textContent = p.Name;
+          citySel.appendChild(opt);
+        });
+      }
+
+      function handleCityChange() {
+        const citySel = document.getElementById("ckCity");
+        const distSel = document.getElementById("ckDistrict");
+        const wardSel = document.getElementById("ckWard");
+        if (!citySel || !distSel || !wardSel) return;
+
+        const cityName = citySel.value;
+        distSel.innerHTML = '<option value="">-- Chọn Quận / Huyện --</option>';
+        wardSel.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
+        wardSel.disabled = true;
+
+        if (!cityName) {
+          distSel.disabled = true;
+          return;
+        }
+
+        const province = vietnamAddressData.find((p) => p.Name === cityName);
+        if (province && Array.isArray(province.Districts) && province.Districts.length > 0) {
+          province.Districts.forEach((d) => {
+            const opt = document.createElement("option");
+            opt.value = d.Name;
+            opt.textContent = d.Name;
+            distSel.appendChild(opt);
+          });
+          distSel.disabled = false;
+        } else {
+          distSel.disabled = true;
+        }
+      }
+
+      function handleDistrictChange() {
+        const citySel = document.getElementById("ckCity");
+        const distSel = document.getElementById("ckDistrict");
+        const wardSel = document.getElementById("ckWard");
+        if (!citySel || !distSel || !wardSel) return;
+
+        const cityName = citySel.value;
+        const distName = distSel.value;
+        wardSel.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
+
+        if (!cityName || !distName) {
+          wardSel.disabled = true;
+          return;
+        }
+
+        const province = vietnamAddressData.find((p) => p.Name === cityName);
+        const district = province?.Districts?.find((d) => d.Name === distName);
+
+        if (district && Array.isArray(district.Wards) && district.Wards.length > 0) {
+          district.Wards.forEach((w) => {
+            const opt = document.createElement("option");
+            opt.value = w.Name;
+            opt.textContent = w.Name;
+            wardSel.appendChild(opt);
+          });
+          wardSel.disabled = false;
+        } else {
+          wardSel.disabled = true;
+        }
+      }
+
+      const citySelEl = document.getElementById("ckCity");
+      const distSelEl = document.getElementById("ckDistrict");
+      if (citySelEl) {
+        loadVietnamAddressData();
+        citySelEl.addEventListener("change", handleCityChange);
+      }
+      if (distSelEl) {
+        distSelEl.addEventListener("change", handleDistrictChange);
+      }
 
       // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
       async function handleSubmit() {
@@ -563,9 +677,9 @@ ${itemsList || "  (Không có thông tin)"}
 
         const addressParts = [];
         if (street) addressParts.push(street);
-        if (ward) addressParts.push(ward.toLowerCase().startsWith("phường/xã") ? ward : `Phường/xã: ${ward}`);
-        if (district) addressParts.push(district.toLowerCase().startsWith("quận/huyện") ? district : `Quận/huyện: ${district}`);
-        if (city) addressParts.push(city.toLowerCase().startsWith("thành phố/tỉnh") ? city : `Thành phố/tỉnh: ${city}`);
+        if (ward) addressParts.push(ward);
+        if (district) addressParts.push(district);
+        if (city) addressParts.push(city);
         const address = addressParts.join(", ") || [street, ward, district, city].filter(Boolean).join(", ");
 
         const items = Cart.getItems();
