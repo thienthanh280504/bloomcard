@@ -364,34 +364,37 @@ h1 em, h2 em { color: var(--berry); font-style: italic; }
 /* ---------- Lightbox ---------- */
 .lightbox {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(18, 12, 15, .88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  display: grid; place-items: center; padding: 20px;
+  background: rgba(18, 12, 15, .92);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
   opacity: 0; pointer-events: none; transition: opacity .25s;
+  /* Bỏ backdrop-filter: gây lỗi layout trên iOS Safari */
 }
 .lightbox.is-open { opacity: 1; pointer-events: auto; }
 .lightbox__inner {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
-  max-width: 90vw; max-height: 92vh;
+  width: 100%; max-width: 92vw; max-height: 92vh;
 }
 .lightbox__stage {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  max-height: 72vh;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; max-height: 80vh;
+  overflow: hidden;
 }
 .lightbox img {
-  max-height: 72vh; max-width: min(85vw, 540px); width: auto; height: auto;
-  border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.5);
-  background: #000;
+  display: block;
+  max-height: 78vh; max-width: 100%;
+  width: auto; height: auto;
+  object-fit: contain;
+  border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.5);
 }
 .lightbox video {
-  /* Video dọc (portrait) cần căn theo chiều cao, không giới hạn width cứng */
+  display: block;
   max-height: 80vh;
-  max-width: min(95vw, 480px);
+  max-width: 100%;
   width: auto; height: auto;
+  object-fit: contain;
   border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.5);
   background: #000;
-  display: block;
 }
 .lightbox__close {
   position: absolute; top: 20px; right: 24px; z-index: 10;
