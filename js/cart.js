@@ -29,6 +29,63 @@
     return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?${params.toString()}`;
   }
 
+  /* ---- Thông báo Telegram khi có đơn hàng ---- */
+  const TELEGRAM_BOT_TOKEN = "8901761384:AAFPdwOZcPo_i2QpJJtuz4VwW5hdBNZxYQs";
+  const TELEGRAM_CHAT_ID = "8598018302";
+
+  /**
+   * Gửi thông báo đơn hàng mới qua Telegram Bot
+   * @param {Object} order - Dữ liệu đơn hàng vừa tạo
+   */
+  async function sendTelegramOrderNotification(order) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID || !order) return;
+
+    try {
+      const itemsList = (order.items || [])
+        .map((it, idx) => `  ${idx + 1}. <b>${esc(it.name)}</b> (x${it.qty || 1}) — <code>${formatPrice((Number(it.price) || 0) * (Number(it.qty) || 1))}</code>`)
+        .join("\n");
+
+      const timeStr = new Date().toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        hour12: false,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const message =
+`🛍️ <b>ĐƠN HÀNG MỚI TỪ BLOOMCARD!</b>
+━━━━━━━━━━━━━━━━━━━━
+🆔 <b>Mã đơn:</b> <code>#${esc(order.id || order.code)}</code>
+👤 <b>Khách hàng:</b> ${esc(order.customer_name || order.name || "Không rõ")}
+📞 <b>Điện thoại:</b> <code>${esc(order.phone || "Không có")}</code>
+📧 <b>Email:</b> ${esc(order.email && order.email !== "khachhang@bloomcard.vn" ? order.email : "Không cung cấp")}
+📍 <b>Địa chỉ:</b> ${esc(order.address || [order.street, order.ward, order.district, order.city].filter(Boolean).join(", "))}
+
+📦 <b>Sản phẩm đặt:</b>
+${itemsList || "  (Không có thông tin)"}
+
+💰 <b>Tổng thanh toán:</b> <b>${formatPrice(order.total || order.subtotal || 0)}</b>
+💳 <b>Phương thức:</b> ${esc(order.shippingMethod || "Chuyển khoản ngân hàng VietinBank")}
+⏰ <b>Thời gian đặt:</b> ${timeStr}`;
+
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: "HTML"
+        })
+      });
+      console.log("Đã gửi thông báo đơn hàng qua Telegram:", order.id || order.code);
+    } catch (err) {
+      console.warn("Lỗi gửi thông báo đơn hàng Telegram:", err);
+    }
+  }
+
   const Cart = {
     // Lấy danh sách sản phẩm trong giỏ
     getItems() {
@@ -620,6 +677,11 @@
         } catch (sbErr) {
           console.warn("Lỗi đồng bộ đơn hàng lên Supabase:", sbErr);
         }
+
+        // 3. Gửi thông báo đến Telegram Bot
+        sendTelegramOrderNotification(order).catch((tgErr) => {
+          console.warn("Lỗi gửi thông báo Telegram:", tgErr);
+        });
 
         submitBtns.forEach((b) => {
           b.disabled = false;
