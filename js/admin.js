@@ -22,8 +22,10 @@
   /* ---------- Dữ liệu trong trang ---------- */
   let products = [];   // chưa xoá
   let feedbacks = [];  // chưa xoá
-  let trash = [];      // đã xoá (cả 2 loại)
+  let trash = [];      // đã xoá (products + feedbacks)
+  let trashedOrders = []; // đơn hàng đã xoá
   let orders = [];     // danh sách đơn hàng
+  let currentTrashFilter = "products"; // tab đang chọn trong mục Đã xoá
 
   /* =========================================================
      TRẠNG THÁI LƯU
@@ -171,12 +173,11 @@
     if (view === "orders") renderOrders();
     // Cập nhật tiêu đề + phụ đề mobile
     const titles = { products: "Sản phẩm", orders: "Đơn hàng", feedback: "Feedback", trash: "Đã xoá" };
-    const subIds = { products: "pSummary", orders: "oSummary", feedback: "fSummary", trash: "tSummary" };
     const mtopTitle = $("#mtopTitle");
     const mtopSub = $("#mtopSub");
     if (mtopTitle) mtopTitle.textContent = titles[view] || view;
     if (mtopSub) {
-      const src = $("#" + subIds[view]);
+      const src = $("#" + (subIds[view] || ""));
       mtopSub.textContent = src ? src.textContent : "";
     }
     try { history.replaceState(null, "", "#" + view); } catch (e) { }
@@ -579,7 +580,15 @@
       if (sb) {
         const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
         if (!error && data) {
-          orders = data;
+          // Tách đơn đã soft-delete vào trashedOrders
+          orders = data.filter((o) => !o.deleted_at);
+          const newTrashed = data.filter((o) => o.deleted_at);
+          // Giữ lại các đơn trước chưa có trên Supabase (offline), mới ghép vào
+          const existingIds = new Set(newTrashed.map((o) => o.id));
+          trashedOrders = [
+            ...newTrashed,
+            ...trashedOrders.filter((o) => !existingIds.has(o.id))
+          ];
         }
       }
     } catch (e) {
@@ -587,6 +596,7 @@
     }
     mergeLocalOrders();
     renderOrders();
+    renderTrash();
   }
 
   function getStatusInfo(status) {
@@ -654,7 +664,6 @@
 
     listEl.innerHTML = filtered.map((o) => {
       const st = o.status || "pending";
-      const stInfo = getStatusInfo(st);
       const isCompleted = st === "completed";
       const isCancelled = st === "cancelled";
       const items = Array.isArray(o.items) ? o.items : [];
@@ -880,27 +889,52 @@
       await syncOrderStockChange(order, "completed", "deleted");
     }
 
-    // 1. Xóa khỏi danh sách bộ nhớ và hiển thị ngay
+    // Đánh dấu deleted_at và chuyển vào trashedOrders
+    order.deleted_at = new Date().toISOString();
     orders = orders.filter((o) => o.id !== orderId);
+    trashedOrders.unshift(order);
     renderOrders();
+    renderTrash();
 
-    // 2. Xóa khỏi Supabase
+    // Cập nhật Supabase (soft-delete bằng trường deleted_at)
     try {
       if (sb) {
-        await sb.from("orders").delete().eq("id", orderId);
+        await sb.from("orders").update({ deleted_at: order.deleted_at }).eq("id", orderId);
       }
     } catch (e) {
-      console.warn("Lỗi xóa đơn trên Supabase:", e);
+      // Nếu cột deleted_at chưa tồn tại, xóa hẳn như cũ
+      try {
+        if (sb) await sb.from("orders").delete().eq("id", orderId);
+      } catch (e2) {
+        console.warn("Lỗi xóa đơn trên Supabase:", e2);
+      }
     }
 
-    // 3. Xóa khỏi localStorage
+    // Xóa khỏi localStorage
     try {
       const local = JSON.parse(localStorage.getItem("bloomcard_orders") || "[]");
       const filtered = local.filter((lo) => (lo.id || lo.code) !== orderId);
       localStorage.setItem("bloomcard_orders", JSON.stringify(filtered));
     } catch (e) {}
 
-    toast(`Đã xóa đơn hàng #${orderId}`);
+    toast(`Đã chuyển đơn #${orderId} vào mục Đã xoá`, { label: "Hoàn tác", fn: () => restoreOrder(orderId) });
+  }
+
+  async function restoreOrder(orderId) {
+    const idx = trashedOrders.findIndex((o) => o.id === orderId);
+    if (idx < 0) return;
+    const order = trashedOrders[idx];
+    order.deleted_at = null;
+    order.status = order.status === "cancelled" ? "cancelled" : order.status || "pending";
+    trashedOrders.splice(idx, 1);
+    orders.unshift(order);
+    renderOrders();
+    renderTrash();
+    // Cập nhật Supabase
+    try {
+      if (sb) await sb.from("orders").update({ deleted_at: null }).eq("id", orderId);
+    } catch (e) { console.warn(e); }
+    toast(`Đã khôi phục đơn #${orderId}`);
   }
 
   function openOrderDetail(order) {
@@ -1135,14 +1169,62 @@
     return d < 30 ? d + " ngày trước" : new Date(iso).toLocaleDateString("vi-VN");
   }
   function renderTrash() {
-    const n = trash.length;
-    $("#trashBadge").hidden = !n; $("#trashBadge").textContent = n;
-    $("#tSummary").textContent = n ? `${n} mục · bấm Khôi phục để đưa lại lên web` : "Nơi giữ những gì bạn đã xoá";
+    const totalP = trash.filter((x) => x.type === "product").length;
+    const totalF = trash.filter((x) => x.type === "feedback").length;
+    const totalO = trashedOrders.length;
+    const totalAll = totalP + totalF + totalO;
+
+    // Cập nhật badge trên menu
+    $("#trashBadge").hidden = !totalAll;
+    $("#trashBadge").textContent = totalAll;
+
+    // Cập nhật số lượng trên từng tab
+    if ($("#trashCountProducts")) $("#trashCountProducts").textContent = totalP;
+    if ($("#trashCountOrders")) $("#trashCountOrders").textContent = totalO;
+    if ($("#trashCountFeedbacks")) $("#trashCountFeedbacks").textContent = totalF;
+
+    $("#tSummary").textContent = totalAll
+      ? `${totalAll} mục đã xoá · bấm Khôi phục để đưa lại lên web`
+      : "Nơi giữ những gì bạn đã xoá";
     syncMtopSub();
-    $("#trashEmpty").hidden = n > 0;
-    $("#btnEmptyTrash").hidden = !n;
-    $("#trashList").innerHTML = trash.map((t) => {
-      const isP = t.type === "product", r = t.row;
+
+    // Lọc theo tab đang chọn
+    let list;
+    if (currentTrashFilter === "products") {
+      list = trash.filter((x) => x.type === "product");
+    } else if (currentTrashFilter === "feedbacks") {
+      list = trash.filter((x) => x.type === "feedback");
+    } else {
+      list = trashedOrders.map((o) => ({ type: "order", row: o }));
+    }
+
+    const isEmpty = !list.length;
+    $("#trashEmpty").hidden = !isEmpty;
+    $("#btnEmptyTrash").hidden = isEmpty;
+
+    $("#trashList").innerHTML = list.map((t) => {
+      const r = t.row;
+      if (t.type === "order") {
+        const items = Array.isArray(r.items) ? r.items : [];
+        const previewImg = items[0]?.image || "";
+        const names = items.map((i) => esc(i.name || "Photocard") + (i.qty > 1 ? ` x${i.qty}` : "")).slice(0, 3).join(", ");
+        return `
+        <article class="titem" data-type="order" data-id="${esc(r.id)}">
+          ${previewImg ? `<img class="titem__img" src="${esc(asset(previewImg))}" alt="" loading="lazy" />` : `<div class="titem__img titem__img--placeholder"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>`}
+          <div class="titem__info">
+            <span class="titem__type titem__type--order">Đơn hàng</span>
+            <b>#${esc(r.id)}</b>
+            <small>${esc(r.customer_name || "Khách hàng")} · ${fmt(r.subtotal || r.total || 0)}</small>
+            ${names ? `<small class="titem__items">${names}</small>` : ""}
+            <small>Xoá ${ago(r.deleted_at || r.cancelled_at || r.created_at)}</small>
+          </div>
+          <div class="titem__act">
+            <button type="button" class="btn btn--sm" data-act="restore-order">Khôi phục</button>
+            <button type="button" class="ic ic--del" data-act="purge-order" aria-label="Xoá vĩnh viễn">✕</button>
+          </div>
+        </article>`;
+      }
+      const isP = t.type === "product";
       return `
       <article class="titem" data-type="${t.type}" data-id="${esc(r.id)}">
         <img class="titem__img ${isP ? "" : "is-wide"}" src="${esc(asset(r.image || "images/favicon.svg"))}" alt="" loading="lazy" />
@@ -1158,6 +1240,17 @@
       </article>`;
     }).join("");
   }
+
+  // Tab lọc trong mục Đã xoá
+  $("#trashFilterTabs")?.addEventListener("click", (e) => {
+    const tab = e.target.closest(".filter-tab");
+    if (!tab) return;
+    $$("#trashFilterTabs .filter-tab").forEach((t) => t.classList.remove("is-active"));
+    tab.classList.add("is-active");
+    currentTrashFilter = tab.dataset.trashType || "products";
+    renderTrash();
+  });
+
   const tableOf = (type) => (type === "product" ? "products" : "feedbacks");
 
   async function restore(type, id) {
@@ -1181,6 +1274,21 @@
   $("#trashList").addEventListener("click", async (e) => {
     const b = e.target.closest("[data-act]"); if (!b) return;
     const el = b.closest(".titem"), type = el.dataset.type, id = el.dataset.id;
+
+    // Xử lý đơn hàng
+    if (type === "order") {
+      if (b.dataset.act === "restore-order") return restoreOrder(id);
+      const o = trashedOrders.find((x) => x.id === id); if (!o) return;
+      const yes = await askDelete({ title: "Xóa vĩnh viễn đơn hàng?", text: "Không thể khôi phục lại.", ok: "Xóa vĩnh viễn" });
+      if (!yes) return;
+      try {
+        if (sb) await sb.from("orders").delete().eq("id", id);
+        trashedOrders = trashedOrders.filter((x) => x.id !== id);
+        renderTrash(); toast("Đã xóa vĩnh viễn đơn hàng");
+      } catch (e) { }
+      return;
+    }
+
     if (b.dataset.act === "restore") return restore(type, id);
     const t = trash.find((x) => x.type === type && x.row.id === id); if (!t) return;
     const yes = await askDelete({ title: "Xoá vĩnh viễn?", text: "Không thể khôi phục lại.", img: t.row.image, wide: type !== "product", ok: "Xoá vĩnh viễn" });
@@ -1193,16 +1301,44 @@
     } catch (e) { }
   });
   $("#btnEmptyTrash").addEventListener("click", async () => {
-    const yes = await askDelete({ title: "Dọn sạch mục Đã xoá?", text: `Xoá hẳn ${trash.length} mục, không thể khôi phục.`, ok: "Dọn sạch" });
+    let title, text, confirmFn;
+    if (currentTrashFilter === "orders") {
+      const n = trashedOrders.length;
+      title = "Dọn sạch đơn hàng đã xóa?";
+      text = `Xóa hẳn ${n} đơn hàng, không thể khôi phục.`;
+      confirmFn = async () => {
+        if (sb) {
+          const ids = trashedOrders.map((o) => o.id);
+          for (const id of ids) { try { await sb.from("orders").delete().eq("id", id); } catch (e) { } }
+        }
+        trashedOrders = [];
+        renderTrash();
+        toast("Đã dọn sạch đơn hàng đã xóa");
+      };
+    } else if (currentTrashFilter === "feedbacks") {
+      const items = trash.filter((x) => x.type === "feedback");
+      title = "Dọn sạch feedback đã xóa?";
+      text = `Xóa hẳn ${items.length} ảnh feedback, không thể khôi phục.`;
+      confirmFn = async () => {
+        await run(async () => must(await sb.from("feedbacks").delete().not("deleted_at", "is", null)));
+        items.forEach((t) => removeImage(t.row.image));
+        trash = trash.filter((x) => x.type !== "feedback");
+        renderTrash(); toast("Đã dọn sạch feedback");
+      };
+    } else {
+      const items = trash.filter((x) => x.type === "product");
+      title = "Dọn sạch sản phẩm đã xóa?";
+      text = `Xóa hẳn ${items.length} sản phẩm, không thể khôi phục.`;
+      confirmFn = async () => {
+        await run(async () => must(await sb.from("products").delete().not("deleted_at", "is", null)));
+        items.forEach((t) => removeImage(t.row.image));
+        trash = trash.filter((x) => x.type !== "product");
+        renderTrash(); toast("Đã dọn sạch sản phẩm");
+      };
+    }
+    const yes = await askDelete({ title, text, ok: "Dọn sạch" });
     if (!yes) return;
-    try {
-      await run(async () => {
-        must(await sb.from("products").delete().not("deleted_at", "is", null));
-        must(await sb.from("feedbacks").delete().not("deleted_at", "is", null));
-      });
-      trash.forEach((t) => removeImage(t.row.image));
-      trash = []; renderTrash(); toast("Đã dọn sạch");
-    } catch (e) { }
+    try { await confirmFn(); } catch (e) { }
   });
 
   /* =========================================================
@@ -1409,7 +1545,7 @@
 
   $$("[data-logout]").forEach((b) => b.addEventListener("click", async () => {
     try { await sb.auth.signOut(); } catch (e) { }
-    products = []; feedbacks = []; trash = [];
+    products = []; feedbacks = []; trash = []; orders = []; trashedOrders = [];
     showLogin();
   }));
 

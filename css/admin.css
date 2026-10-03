@@ -123,6 +123,7 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
   background: var(--bg); color: var(--text-2); font-size: 11px; font-weight: 600;
 }
 .menu__item.is-active .menu__badge { background: var(--accent); color: #fff; }
+#trashBadge { background: var(--accent); color: #fff; }
 
 .side__foot { margin-top: auto; min-width: 0; }
 .side-maint {
@@ -426,6 +427,13 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
 @keyframes bump { 50% { color: var(--accent); } }
 .titem__type { justify-self: start; height: 18px; font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; background: var(--accent-weak); color: var(--accent); }
 .titem__type.is-fb { background: #f5f3ff; color: #6d28d9; }
+.titem__type--order { background: #fff7ed; color: #c2410c; }
+.titem__img--placeholder {
+  width: 64px; height: 64px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-weak); border-radius: 8px; color: var(--accent);
+}
+.titem__items { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .tempty { padding: 48px 16px; text-align: center; }
 
 /* ---------- Feedback ---------- */

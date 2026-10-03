@@ -253,8 +253,24 @@
             <h1>Đã xoá</h1>
             <p class="muted" id="tSummary"></p>
           </div>
-          <button type="button" class="btn btn--ghost" id="btnEmptyTrash">Dọn sạch</button>
+          <button type="button" class="btn btn--ghost" id="btnEmptyTrash" hidden>Dọn sạch</button>
         </header>
+
+        <!-- 3 tab lọc -->
+        <div class="toolbar orders-toolbar" id="trashToolbar">
+          <div class="filter-tabs" id="trashFilterTabs">
+            <button type="button" class="filter-tab is-active" data-trash-type="products">
+              Sản phẩm <span class="filter-count" id="trashCountProducts">0</span>
+            </button>
+            <button type="button" class="filter-tab" data-trash-type="orders">
+              Đơn hàng <span class="filter-count" id="trashCountOrders">0</span>
+            </button>
+            <button type="button" class="filter-tab" data-trash-type="feedbacks">
+              Feedback <span class="filter-count" id="trashCountFeedbacks">0</span>
+            </button>
+          </div>
+        </div>
+
         <div class="tlist" id="trashList">
           <div class="state-box state-box--list"><span class="spinner"></span>Đang tải danh sách đã xoá…</div>
         </div>
