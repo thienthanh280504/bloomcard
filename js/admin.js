@@ -273,8 +273,6 @@
             <div class="pitem__name-wrap">
               <h4 class="pitem__name" title="${esc(p.name)}">${esc(p.name)}</h4>
               ${p.badge ? `<span class="pill pill--badge">${esc(p.badge)}</span>` : ""}
-              ${p.image2 ? `<span class="pill" title="Có 2 ảnh" style="background:#ecfdf5;color:#059669">2 ảnh</span>` : ""}
-              ${p.video ? `<span class="pill" title="Có video" style="background:#fdf2f8;color:#db2777">▶ Video</span>` : ""}
             </div>
             <div class="pitem__meta">
               <b class="pitem__price">${fmt(p.price)}</b>
