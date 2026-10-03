@@ -35,7 +35,6 @@
           ${sold
             ? `<span class="product__badge product__badge--sold">Đã bán</span>`
             : p.badge ? `<span class="product__badge">${esc(p.badge)}</span>` : ""}
-          ${hasVideo ? `<span class="product__badge product__badge--video" title="Có video check card"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg> Video</span>` : ""}
           ${hasImage2 ? `<span class="product__badge product__badge--photos" title="Có 2 ảnh">2 ảnh</span>` : ""}
         </div>
       `;

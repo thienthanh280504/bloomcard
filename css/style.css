@@ -379,10 +379,19 @@ h1 em, h2 em { color: var(--berry); font-style: italic; }
   position: relative; display: flex; align-items: center; justify-content: center;
   max-height: 72vh;
 }
-.lightbox img, .lightbox video {
+.lightbox img {
   max-height: 72vh; max-width: min(85vw, 540px); width: auto; height: auto;
   border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.5);
   background: #000;
+}
+.lightbox video {
+  /* Video dọc (portrait) cần căn theo chiều cao, không giới hạn width cứng */
+  max-height: 80vh;
+  max-width: min(95vw, 480px);
+  width: auto; height: auto;
+  border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.5);
+  background: #000;
+  display: block;
 }
 .lightbox__close {
   position: absolute; top: 20px; right: 24px; z-index: 10;
