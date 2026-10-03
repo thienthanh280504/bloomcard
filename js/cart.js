@@ -560,7 +560,13 @@ ${itemsList || "  (Không có thông tin)"}
         const ward = (document.getElementById("ckWard")?.value || "").trim();
         const district = (document.getElementById("ckDistrict")?.value || "").trim();
         const city = (document.getElementById("ckCity")?.value || "").trim();
-        const address = `${street}, ${ward}, ${district}, ${city}`;
+
+        const addressParts = [];
+        if (street) addressParts.push(street);
+        if (ward) addressParts.push(ward.toLowerCase().startsWith("phường/xã") ? ward : `Phường/xã: ${ward}`);
+        if (district) addressParts.push(district.toLowerCase().startsWith("quận/huyện") ? district : `Quận/huyện: ${district}`);
+        if (city) addressParts.push(city.toLowerCase().startsWith("thành phố/tỉnh") ? city : `Thành phố/tỉnh: ${city}`);
+        const address = addressParts.join(", ") || [street, ward, district, city].filter(Boolean).join(", ");
 
         const items = Cart.getItems();
         const total = Cart.getTotal();

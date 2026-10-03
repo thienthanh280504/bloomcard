@@ -729,6 +729,23 @@
      ========================================================= */
   const APPS_SCRIPT_MAILER_URL = "https://script.google.com/macros/s/AKfycbzSIz1hJ_FqW4rkF5E4A81dKqsRGn5yCxHBCneJzo6-qqYUQFvT5c1F8WbcHGhfhheNMw/exec";
 
+  function formatFullAddress(order) {
+    if (!order) return "--";
+    if (order.address && (order.address.includes("Phường/xã") || order.address.includes("Quận/huyện") || order.address.includes("Thành phố/tỉnh"))) {
+      return order.address;
+    }
+    const street = (order.street || "").trim();
+    const ward = (order.ward || "").trim();
+    const district = (order.district || "").trim();
+    const city = (order.city || "").trim();
+    const parts = [];
+    if (street) parts.push(street);
+    if (ward) parts.push(ward.toLowerCase().startsWith("phường/xã") ? ward : `Phường/xã: ${ward}`);
+    if (district) parts.push(district.toLowerCase().startsWith("quận/huyện") ? district : `Quận/huyện: ${district}`);
+    if (city) parts.push(city.toLowerCase().startsWith("thành phố/tỉnh") ? city : `Thành phố/tỉnh: ${city}`);
+    return parts.join(", ") || order.address || [street, ward, district, city].filter(Boolean).join(", ") || "--";
+  }
+
   async function sendOrderConfirmationEmail(order) {
     const email = (order.email || "").trim();
     if (!email || !email.includes("@") || email.includes("khachhang@bloomcard.vn")) {
@@ -746,7 +763,7 @@
         ward: order.ward,
         district: order.district,
         city: order.city,
-        address: order.address || [order.street, order.ward, order.district, order.city].filter(Boolean).join(", "),
+        address: formatFullAddress(order),
         items: order.items || [],
         total: order.total || order.subtotal || 0,
         subtotal: order.subtotal || order.total || 0
@@ -954,7 +971,7 @@
     if ($("#odCustomerEmail")) $("#odCustomerEmail").textContent = order.email || "Không có";
 
     // Địa chỉ đầy đủ
-    const fullAddress = order.address || [order.street, order.ward, order.district, order.city].filter(Boolean).join(", ") || "--";
+    const fullAddress = formatFullAddress(order);
     if ($("#odCustomerAddress")) $("#odCustomerAddress").textContent = fullAddress;
 
     // Danh sách sản phẩm chi tiết
