@@ -625,8 +625,9 @@ body.cart-page-body .cart-footer p {
 .ck-review-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 4px;
+  gap: 8px;
 }
 
 .ck-review-row strong {
@@ -662,11 +663,11 @@ body.cart-page-body .cart-footer p {
 }
 
 .ck-shipping-note {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--ink-soft);
   font-style: italic;
   text-align: right;
-  max-width: 55%;
+  line-height: 1.4;
 }
 
 /* ---------- Action buttons ---------- */
