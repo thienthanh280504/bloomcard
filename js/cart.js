@@ -533,7 +533,7 @@ ${itemsList || "  (Không có thông tin)"}
         });
       });
 
-      // ---------- Địa giới hành chính Việt Nam (Tỉnh -> Quận -> Phường) ----------
+      // ---------- Tỉnh/Thành phố dropdown ----------
       let vietnamAddressData = [];
 
       async function loadVietnamAddressData() {
@@ -547,7 +547,7 @@ ${itemsList || "  (Không có thông tin)"}
             vietnamAddressData = await res.json();
           }
         } catch (e) {
-          console.warn("Lỗi đọc vietnam-address.json cục bộ:", e);
+          console.warn("Lỗi đọc vietnam-address.json:", e);
         }
 
         if (!vietnamAddressData || !vietnamAddressData.length) {
@@ -574,92 +574,10 @@ ${itemsList || "  (Không có thông tin)"}
         });
       }
 
-      function handleCityChange() {
-        const citySel = document.getElementById("ckCity");
-        const distInput = document.getElementById("ckDistrict");
-        const distList = document.getElementById("ckDistrictList");
-        const wardInput = document.getElementById("ckWard");
-        const wardList = document.getElementById("ckWardList");
-        if (!citySel || !distInput || !distList || !wardInput || !wardList) return;
-
-        const cityName = citySel.value;
-
-        // Reset Quận/Huyện và Phường/Xã
-        distInput.value = "";
-        distList.innerHTML = "";
-        wardInput.value = "";
-        wardList.innerHTML = "";
-        distInput.placeholder = cityName ? "Nhập hoặc chọn Quận / Huyện" : "-- Chọn Tỉnh/TP trước --";
-        distInput.disabled = !cityName;
-        wardInput.placeholder = "Nhập hoặc chọn Phường / Xã";
-        wardInput.disabled = true;
-
-        if (!cityName) return;
-
-        const province = vietnamAddressData.find((p) => p.Name === cityName);
-        if (province && Array.isArray(province.Districts)) {
-          province.Districts.forEach((d) => {
-            const opt = document.createElement("option");
-            opt.value = d.Name;
-            distList.appendChild(opt);
-          });
-        }
-      }
-
-      function updateWardList() {
-        const citySel = document.getElementById("ckCity");
-        const distInput = document.getElementById("ckDistrict");
-        const wardInput = document.getElementById("ckWard");
-        const wardList = document.getElementById("ckWardList");
-        if (!citySel || !distInput || !wardInput || !wardList) return;
-
-        const cityName = citySel.value;
-        const distName = distInput.value.trim();
-
-        wardList.innerHTML = "";
-
-        if (!cityName || !distName) {
-          wardInput.disabled = true;
-          wardInput.value = "";
-          return;
-        }
-
-        const province = vietnamAddressData.find((p) => p.Name === cityName);
-        const district = province?.Districts?.find(
-          (d) => d.Name.toLowerCase() === distName.toLowerCase()
-        );
-
-        if (district && Array.isArray(district.Wards) && district.Wards.length > 0) {
-          district.Wards.forEach((w) => {
-            const opt = document.createElement("option");
-            opt.value = w.Name;
-            wardList.appendChild(opt);
-          });
-          wardInput.disabled = false;
-          wardInput.value = "";
-        } else {
-          // Cho phép nhập tự do nếu không khớp chính xác
-          wardInput.disabled = false;
-        }
-      }
-
       const citySelEl = document.getElementById("ckCity");
-      const distInputEl = document.getElementById("ckDistrict");
       if (citySelEl) {
         loadVietnamAddressData();
-        citySelEl.addEventListener("change", handleCityChange);
       }
-      if (distInputEl) {
-        // Cập nhật gợi ý Phường/Xã khi người dùng gõ Quận/Huyện
-        distInputEl.addEventListener("change", updateWardList);
-        distInputEl.addEventListener("input", updateWardList);
-      }
-
-      // Khởi tạo trạng thái disabled ban đầu
-      const distEl = document.getElementById("ckDistrict");
-      const wardEl = document.getElementById("ckWard");
-      if (distEl) distEl.disabled = true;
-      if (wardEl) wardEl.disabled = true;
 
       // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
       async function handleSubmit() {
