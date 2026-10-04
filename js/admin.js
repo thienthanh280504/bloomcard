@@ -731,19 +731,13 @@
 
   function formatFullAddress(order) {
     if (!order) return "--";
-    if (order.address && (order.address.includes("Phường/xã") || order.address.includes("Quận/huyện") || order.address.includes("Thành phố/tỉnh"))) {
-      return order.address;
-    }
     const street = (order.street || "").trim();
     const ward = (order.ward || "").trim();
     const district = (order.district || "").trim();
     const city = (order.city || "").trim();
-    const parts = [];
-    if (street) parts.push(street);
-    if (ward) parts.push(ward.toLowerCase().startsWith("phường/xã") ? ward : `Phường/xã: ${ward}`);
-    if (district) parts.push(district.toLowerCase().startsWith("quận/huyện") ? district : `Quận/huyện: ${district}`);
-    if (city) parts.push(city.toLowerCase().startsWith("thành phố/tỉnh") ? city : `Thành phố/tỉnh: ${city}`);
-    return parts.join(", ") || order.address || [street, ward, district, city].filter(Boolean).join(", ") || "--";
+    // Ghép đơn giản, không thêm nhãn
+    const parts = [street, ward, district, city].filter(Boolean);
+    return parts.join(", ") || order.address || "--";
   }
 
   async function sendOrderConfirmationEmail(order) {
