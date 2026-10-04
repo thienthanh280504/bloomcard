@@ -61,7 +61,7 @@
 🆔 <b>Mã đơn:</b> <code>#${esc(order.id || order.code)}</code>
 👤 <b>Khách hàng:</b> ${esc(order.customer_name || order.name || "Không rõ")}
 📞 <b>Điện thoại:</b> <code>${esc(order.phone || "Không có")}</code>
-📧 <b>Email:</b> ${esc(order.email && order.email !== "khachhang@bloomcard.vn" ? order.email : "Không cung cấp")}
+📧 <b>Email:</b> ${esc(order.email || "Không cung cấp")}
 📍 <b>Địa chỉ:</b> ${esc(order.address || [order.street, order.ward, order.district, order.city].filter(Boolean).join(", "))}
 
 📦 <b>Sản phẩm đặt:</b>
@@ -524,8 +524,8 @@ ${itemsList || "  (Không có thông tin)"}
         });
       }
 
-      // ---------- Clear error on input / select change ----------
-      checkoutModal.querySelectorAll("input, select").forEach((inp) => {
+      // ---------- Clear error on input change ----------
+      checkoutModal.querySelectorAll("input").forEach((inp) => {
         inp.addEventListener("input", () => {
           inp.classList.remove("is-error");
         });
@@ -533,8 +533,6 @@ ${itemsList || "  (Không có thông tin)"}
           inp.classList.remove("is-error");
         });
       });
-
-
 
       // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
       async function handleSubmit() {
@@ -559,23 +557,13 @@ ${itemsList || "  (Không có thông tin)"}
 
         const name = (document.getElementById("ckName")?.value || "").trim();
         const phone = (document.getElementById("ckPhone")?.value || "").trim();
-        const rawEmail = (document.getElementById("ckEmail")?.value || "").trim();
-        const email = rawEmail || "";
-        if (!email) {
-          // Đã validate bắt buộc ở trên, không cần fallback
-          return;
-        }
+        const email = (document.getElementById("ckEmail")?.value || "").trim();
         const street = (document.getElementById("ckStreet")?.value || "").trim();
         const ward = (document.getElementById("ckWard")?.value || "").trim();
         const district = (document.getElementById("ckDistrict")?.value || "").trim();
         const city = (document.getElementById("ckCity")?.value || "").trim();
 
-        const addressParts = [];
-        if (street) addressParts.push(street);
-        if (ward) addressParts.push(ward);
-        if (district) addressParts.push(district);
-        if (city) addressParts.push(city);
-        const address = addressParts.join(", ") || [street, ward, district, city].filter(Boolean).join(", ");
+        const address = [street, ward, district, city].filter(Boolean).join(", ");
 
         const items = Cart.getItems();
         const total = Cart.getTotal();
