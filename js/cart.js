@@ -534,51 +534,7 @@ ${itemsList || "  (Không có thông tin)"}
         });
       });
 
-      // ---------- Tỉnh/Thành phố dropdown ----------
-      let vietnamAddressData = [];
 
-      async function loadVietnamAddressData() {
-        if (vietnamAddressData && vietnamAddressData.length > 0) {
-          populateCitySelect();
-          return;
-        }
-        try {
-          const res = await fetch("js/vendor/vietnam-address.json");
-          if (res.ok) {
-            vietnamAddressData = await res.json();
-          }
-        } catch (e) {
-          console.warn("Lỗi đọc vietnam-address.json:", e);
-        }
-
-        if (!vietnamAddressData || !vietnamAddressData.length) {
-          try {
-            const res2 = await fetch("https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json");
-            if (res2.ok) vietnamAddressData = await res2.json();
-          } catch (err2) {}
-        }
-
-        populateCitySelect();
-      }
-
-      function populateCitySelect() {
-        const citySel = document.getElementById("ckCity");
-        if (!citySel || !vietnamAddressData || !vietnamAddressData.length) return;
-        if (citySel.options.length > 1) return;
-
-        citySel.innerHTML = '<option value="">-- Chọn Tỉnh / TP --</option>';
-        vietnamAddressData.forEach((p) => {
-          const opt = document.createElement("option");
-          opt.value = p.Name;
-          opt.textContent = p.Name;
-          citySel.appendChild(opt);
-        });
-      }
-
-      const citySelEl = document.getElementById("ckCity");
-      if (citySelEl) {
-        loadVietnamAddressData();
-      }
 
       // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
       async function handleSubmit() {
