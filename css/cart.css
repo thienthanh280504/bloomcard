@@ -661,6 +661,14 @@ body.cart-page-body .cart-footer p {
   margin-top: 4px;
 }
 
+.ck-shipping-note {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  text-align: right;
+  max-width: 55%;
+}
+
 /* ---------- Action buttons ---------- */
 .ck-mobile-actions {
   display: none; /* ẩn trên desktop */

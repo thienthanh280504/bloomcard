@@ -103,15 +103,15 @@
           <form id="checkoutForm" novalidate>
             <div class="ck-form-group">
               <label for="ckName">Tên người nhận <span class="ck-req">*</span></label>
-              <input type="text" id="ckName" required placeholder="Nguyễn Văn A" autocomplete="name" />
+              <input type="text" id="ckName" required placeholder="Nguyễn Văn A" autocomplete="off" />
             </div>
             <div class="ck-form-group">
               <label for="ckPhone">Số điện thoại <span class="ck-req">*</span></label>
-              <input type="tel" id="ckPhone" required placeholder="0901 234 567" autocomplete="tel" />
+              <input type="tel" id="ckPhone" required placeholder="0901 234 567" autocomplete="off" />
             </div>
             <div class="ck-form-group">
-              <label for="ckEmail">Email</label>
-              <input type="email" id="ckEmail" placeholder="email@example.com" autocomplete="email" />
+              <label for="ckEmail">Email <span class="ck-req">*</span></label>
+              <input type="email" id="ckEmail" required placeholder="email@example.com" autocomplete="off" />
             </div>
 
             <div class="ck-form-divider">
@@ -120,31 +120,33 @@
 
             <div class="ck-form-group">
               <label for="ckStreet">Số nhà, tên đường <span class="ck-req">*</span></label>
-              <input type="text" id="ckStreet" required placeholder="Ví dụ: 65/7 Trần Văn Dư" autocomplete="address-line1" />
+              <input type="text" id="ckStreet" required placeholder="Ví dụ: 65/7 Trần Văn Dư" autocomplete="off" />
+            </div>
+            <div class="ck-form-group">
+              <label for="ckWard">Phường / Xã <span class="ck-req">*</span></label>
+              <input type="text" id="ckWard" required placeholder="Nhập Phường / Xã" autocomplete="off" />
             </div>
             <div class="ck-form-row">
+              <div class="ck-form-group">
+                <label for="ckDistrict">Quận / Huyện <span class="ck-req">*</span></label>
+                <input type="text" id="ckDistrict" required placeholder="Nhập Quận / Huyện" autocomplete="off" />
+              </div>
               <div class="ck-form-group">
                 <label for="ckCity">Tỉnh / Thành phố <span class="ck-req">*</span></label>
                 <select id="ckCity" required>
                   <option value="">-- Chọn Tỉnh / TP --</option>
                 </select>
               </div>
-              <div class="ck-form-group">
-                <label for="ckDistrict">Quận / Huyện <span class="ck-req">*</span></label>
-                <input type="text" id="ckDistrict" required
-                  placeholder="Nhập Quận / Huyện" autocomplete="off" />
-              </div>
-            </div>
-            <div class="ck-form-group">
-              <label for="ckWard">Phường / Xã <span class="ck-req">*</span></label>
-              <input type="text" id="ckWard" required
-                placeholder="Nhập Phường / Xã" autocomplete="off" />
             </div>
 
             <div class="ck-review-box">
               <div class="ck-review-row">
                 <span>Tiền sản phẩm:</span>
                 <strong id="checkoutTotalReview">0đ</strong>
+              </div>
+              <div class="ck-review-row">
+                <span>Phí vận chuyển:</span>
+                <span class="ck-shipping-note">Sẽ được bạn thanh toán khi nhận hàng</span>
               </div>
               <div class="ck-review-row ck-review-row--total">
                 <span>Tổng thanh toán:</span>

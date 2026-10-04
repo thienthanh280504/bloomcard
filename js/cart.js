@@ -336,10 +336,11 @@ ${itemsList || "  (Không có thông tin)"}
         const requiredFields = [
           { id: "ckName", label: "Tên người nhận" },
           { id: "ckPhone", label: "Số điện thoại" },
-          { id: "ckCity", label: "Tỉnh / Thành phố" },
-          { id: "ckDistrict", label: "Quận / Huyện" },
-          { id: "ckWard", label: "Phường / Xã" },
+          { id: "ckEmail", label: "Email" },
           { id: "ckStreet", label: "Số nhà, tên đường" },
+          { id: "ckWard", label: "Phường / Xã" },
+          { id: "ckDistrict", label: "Quận / Huyện" },
+          { id: "ckCity", label: "Tỉnh / Thành phố" },
         ];
 
         let valid = true;
@@ -603,7 +604,11 @@ ${itemsList || "  (Không có thông tin)"}
         const name = (document.getElementById("ckName")?.value || "").trim();
         const phone = (document.getElementById("ckPhone")?.value || "").trim();
         const rawEmail = (document.getElementById("ckEmail")?.value || "").trim();
-        const email = rawEmail || "khachhang@bloomcard.vn";
+        const email = rawEmail || "";
+        if (!email) {
+          // Đã validate bắt buộc ở trên, không cần fallback
+          return;
+        }
         const street = (document.getElementById("ckStreet")?.value || "").trim();
         const ward = (document.getElementById("ckWard")?.value || "").trim();
         const district = (document.getElementById("ckDistrict")?.value || "").trim();
