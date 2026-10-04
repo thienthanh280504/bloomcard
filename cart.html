@@ -127,16 +127,16 @@
               </div>
               <div class="ck-form-group">
                 <label for="ckDistrict">Quận / Huyện <span class="ck-req">*</span></label>
-                <select id="ckDistrict" required disabled>
-                  <option value="">-- Chọn Quận / Huyện --</option>
-                </select>
+                <input type="text" id="ckDistrict" list="ckDistrictList" required
+                  placeholder="Nhập hoặc chọn Quận / Huyện" autocomplete="off" />
+                <datalist id="ckDistrictList"></datalist>
               </div>
             </div>
             <div class="ck-form-group">
               <label for="ckWard">Phường / Xã <span class="ck-req">*</span></label>
-              <select id="ckWard" required disabled>
-                <option value="">-- Chọn Phường / Xã --</option>
-              </select>
+              <input type="text" id="ckWard" list="ckWardList" required
+                placeholder="Nhập hoặc chọn Phường / Xã" autocomplete="off" />
+              <datalist id="ckWardList"></datalist>
             </div>
             <div class="ck-form-group">
               <label for="ckStreet">Số nhà, tên đường <span class="ck-req">*</span></label>

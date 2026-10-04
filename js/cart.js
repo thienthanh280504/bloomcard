@@ -576,74 +576,90 @@ ${itemsList || "  (Không có thông tin)"}
 
       function handleCityChange() {
         const citySel = document.getElementById("ckCity");
-        const distSel = document.getElementById("ckDistrict");
-        const wardSel = document.getElementById("ckWard");
-        if (!citySel || !distSel || !wardSel) return;
+        const distInput = document.getElementById("ckDistrict");
+        const distList = document.getElementById("ckDistrictList");
+        const wardInput = document.getElementById("ckWard");
+        const wardList = document.getElementById("ckWardList");
+        if (!citySel || !distInput || !distList || !wardInput || !wardList) return;
 
         const cityName = citySel.value;
-        distSel.innerHTML = '<option value="">-- Chọn Quận / Huyện --</option>';
-        wardSel.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
-        wardSel.disabled = true;
 
-        if (!cityName) {
-          distSel.disabled = true;
-          return;
-        }
+        // Reset Quận/Huyện và Phường/Xã
+        distInput.value = "";
+        distList.innerHTML = "";
+        wardInput.value = "";
+        wardList.innerHTML = "";
+        distInput.placeholder = cityName ? "Nhập hoặc chọn Quận / Huyện" : "-- Chọn Tỉnh/TP trước --";
+        distInput.disabled = !cityName;
+        wardInput.placeholder = "Nhập hoặc chọn Phường / Xã";
+        wardInput.disabled = true;
+
+        if (!cityName) return;
 
         const province = vietnamAddressData.find((p) => p.Name === cityName);
-        if (province && Array.isArray(province.Districts) && province.Districts.length > 0) {
+        if (province && Array.isArray(province.Districts)) {
           province.Districts.forEach((d) => {
             const opt = document.createElement("option");
             opt.value = d.Name;
-            opt.textContent = d.Name;
-            distSel.appendChild(opt);
+            distList.appendChild(opt);
           });
-          distSel.disabled = false;
-        } else {
-          distSel.disabled = true;
         }
       }
 
-      function handleDistrictChange() {
+      function updateWardList() {
         const citySel = document.getElementById("ckCity");
-        const distSel = document.getElementById("ckDistrict");
-        const wardSel = document.getElementById("ckWard");
-        if (!citySel || !distSel || !wardSel) return;
+        const distInput = document.getElementById("ckDistrict");
+        const wardInput = document.getElementById("ckWard");
+        const wardList = document.getElementById("ckWardList");
+        if (!citySel || !distInput || !wardInput || !wardList) return;
 
         const cityName = citySel.value;
-        const distName = distSel.value;
-        wardSel.innerHTML = '<option value="">-- Chọn Phường / Xã --</option>';
+        const distName = distInput.value.trim();
+
+        wardList.innerHTML = "";
 
         if (!cityName || !distName) {
-          wardSel.disabled = true;
+          wardInput.disabled = true;
+          wardInput.value = "";
           return;
         }
 
         const province = vietnamAddressData.find((p) => p.Name === cityName);
-        const district = province?.Districts?.find((d) => d.Name === distName);
+        const district = province?.Districts?.find(
+          (d) => d.Name.toLowerCase() === distName.toLowerCase()
+        );
 
         if (district && Array.isArray(district.Wards) && district.Wards.length > 0) {
           district.Wards.forEach((w) => {
             const opt = document.createElement("option");
             opt.value = w.Name;
-            opt.textContent = w.Name;
-            wardSel.appendChild(opt);
+            wardList.appendChild(opt);
           });
-          wardSel.disabled = false;
+          wardInput.disabled = false;
+          wardInput.value = "";
         } else {
-          wardSel.disabled = true;
+          // Cho phép nhập tự do nếu không khớp chính xác
+          wardInput.disabled = false;
         }
       }
 
       const citySelEl = document.getElementById("ckCity");
-      const distSelEl = document.getElementById("ckDistrict");
+      const distInputEl = document.getElementById("ckDistrict");
       if (citySelEl) {
         loadVietnamAddressData();
         citySelEl.addEventListener("change", handleCityChange);
       }
-      if (distSelEl) {
-        distSelEl.addEventListener("change", handleDistrictChange);
+      if (distInputEl) {
+        // Cập nhật gợi ý Phường/Xã khi người dùng gõ Quận/Huyện
+        distInputEl.addEventListener("change", updateWardList);
+        distInputEl.addEventListener("input", updateWardList);
       }
+
+      // Khởi tạo trạng thái disabled ban đầu
+      const distEl = document.getElementById("ckDistrict");
+      const wardEl = document.getElementById("ckWard");
+      if (distEl) distEl.disabled = true;
+      if (wardEl) wardEl.disabled = true;
 
       // ---------- Xử lý submit (Desktop + Mobile confirm) ----------
       async function handleSubmit() {
