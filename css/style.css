@@ -670,13 +670,6 @@ h1, h2, .feature h3, .step h3 { text-transform: uppercase; letter-spacing: .02em
 .product__buy:active { transform: scale(.97); }
 .product.is-sold .product__buy { background: #efe9eb; color: #9b8a91; box-shadow: none; pointer-events: none; }
 
-/* Tạm hết (Temporarily out of stock) */
-.product__badge--temp-sold { background: #f59e0b; color: #fff; }
-.product.is-temp-sold .product__buy,
-.product__buy--temp-sold { background: #fef3c7; color: #92400e; box-shadow: none; pointer-events: none; }
-.product.is-temp-sold .product__buy::after,
-.product__buy--temp-sold::after { display: none; }
-
 @media (max-width: 480px) {
   .product__price { font-size: 1rem; }
   .stock { font-size: .7rem; padding: 3px 8px; }
