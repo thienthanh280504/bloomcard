@@ -86,7 +86,9 @@
     const p = findProduct(btn.dataset.product);
     if (!p) return;
     if (p.status === "sold" || p.status === "temp_out" || (p.stock !== undefined && p.stock <= 0)) {
-      toast(p.status === "temp_out" ? "Sản phẩm này hiện tạm hết!" : "Sản phẩm này hiện đã bán hết!");
+      if (p.status !== "temp_out") {
+        toast("Sản phẩm này hiện đã bán hết!");
+      }
       return;
     }
 

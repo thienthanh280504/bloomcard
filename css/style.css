@@ -676,12 +676,8 @@ h1, h2, .feature h3, .step h3 { text-transform: uppercase; letter-spacing: .02em
   color: #92400e;
   border: 1px solid #fde047;
   box-shadow: none;
-  cursor: pointer;
-}
-.product.is-temp-out .product__buy:hover {
-  transform: none;
-  box-shadow: 0 4px 12px rgba(234, 179, 8, .2);
-  background: #fef08a;
+  pointer-events: none;
+  cursor: default;
 }
 .product.is-temp-out .product__buy::after {
   display: none;

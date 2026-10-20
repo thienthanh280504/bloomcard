@@ -27,11 +27,12 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: hidden; }
 body {
   font-family: var(--font); font-size: 14px; line-height: 1.5;
   color: var(--text); background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 body.no-scroll { overflow: hidden; }
 button, input, select { font: inherit; color: inherit; }
@@ -806,26 +807,73 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
   .mtop__burger:hover { background: var(--bg); border-color: var(--border-strong); }
   .mtop__burger svg { width: 20px; height: 20px; }
 
-  .mtop { display: flex; align-items: center; margin-bottom: 12px; gap: 12px; position: relative; }
+  .mtop {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+    position: relative;
+    padding-right: 96px;
+    min-width: 0;
+  }
   .mtop .brand { display: none; }
   .mtop__actions { display: none; }
   .mtop__info {
-    display: block; flex: 1; min-width: 0;
+    display: block;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
   .mtop__title {
-    display: block; font-size: 20px; font-weight: 700;
-    letter-spacing: -.02em; color: var(--text);
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .mtop__sub {
-    font-size: 11.5px; margin-top: 3px;
-    font-style: italic; color: var(--text-3);
+    font-size: 11.5px;
+    margin-top: 3px;
+    font-style: italic;
+    color: var(--text-3);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .vhead > div:first-child { display: none; }
-  .vhead { position: absolute; top: 16px; right: 16px; margin: 0; z-index: 2; }
+  .vhead {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    margin: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
 
-  .main { padding: 16px 16px 32px; }
-  #btnAddProduct { height: 34px; padding: 0 12px; font-size: 12.5px; }
+  .main {
+    position: relative;
+    padding: 16px 16px 32px;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  .vhead .btn,
+  #btnAddProduct,
+  #btnEmptyTrash,
+  #btnRefreshOrders {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
 
   .pitem { grid-template-columns: 40px minmax(0, 1fr); grid-template-areas: "img info" "qty act"; gap: 10px 12px; padding: 12px; }
   .pitem__img { grid-area: img; width: 40px; height: 52px; }
