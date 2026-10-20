@@ -25,8 +25,8 @@
     });
 
     grid.innerHTML = sorted.map((p) => {
-      const sold = p.status === "sold" || (p.stock !== undefined && p.stock <= 0);
       const tempSold = p.status === "temp_sold";
+      const sold = !tempSold && (p.status === "sold" || (p.stock !== undefined && p.stock <= 0));
       const unavailable = sold || tempSold;
       const stock = unavailable ? 0 : (p.stock ?? 1);
       const hasImage2 = Boolean(p.image2);
