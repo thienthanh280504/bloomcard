@@ -421,6 +421,7 @@ button, a, label, select, input { -webkit-tap-highlight-color: transparent; touc
   background: var(--success-weak); color: var(--success);
 }
 .pill--sold { background: var(--bg); color: var(--text-3); }
+.pill--temp-sold { background: #fef3c7; color: #92400e; }
 .pill--sl { background: var(--bg); color: var(--text-2); font-variant-numeric: tabular-nums; }
 .pill--badge { background: var(--accent-weak); color: var(--accent); }
 .pill--sl.bump { animation: bump .25s ease; }

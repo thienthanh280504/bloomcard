@@ -233,7 +233,7 @@
     const src = $("#" + (subIds[current] || ""));
     el.textContent = src ? src.textContent : "";
   }
-  const isSold = (p) => p.status === "sold" || (Number(p.stock) || 0) <= 0;
+  const isSold = (p) => p.status === "sold" || p.status === "temp_sold" || (Number(p.stock) || 0) <= 0;
   function summary() {
     const allCount = products.length;
     const availableCount = products.filter((p) => !isSold(p)).length;
@@ -276,7 +276,7 @@
             </div>
             <div class="pitem__meta">
               <b class="pitem__price">${fmt(p.price)}</b>
-              <span class="pill pill--status ${sold ? "pill--sold" : ""}">${sold ? "Đã bán" : "Còn hàng"}</span>
+              <span class="pill pill--status ${sold ? (p.status === "temp_sold" ? "pill--temp-sold" : "pill--sold") : ""}">${p.status === "temp_sold" ? "Tạm hết" : (sold ? "Đã bán" : "Còn hàng")}</span>
               <span class="pill pill--sl">SL: ${sold ? 0 : p.stock}</span>
             </div>
           </div>
@@ -310,8 +310,9 @@
     row.classList.toggle("is-sold", sold);
     const pill = row.querySelector(".pill--status") || row.querySelector(".pill");
     if (pill) {
-      pill.textContent = sold ? "Đã bán" : "Còn hàng";
-      pill.classList.toggle("pill--sold", sold);
+      pill.textContent = p.status === "temp_sold" ? "Tạm hết" : (sold ? "Đã bán" : "Còn hàng");
+      pill.classList.toggle("pill--sold", sold && p.status !== "temp_sold");
+      pill.classList.toggle("pill--temp-sold", p.status === "temp_sold");
     }
     const sl = row.querySelector(".pill--sl");
     if (sl) {
@@ -414,7 +415,7 @@
     $("#fName").value = p?.name || "";
     $("#fPrice").value = p ? moneyFmt(p.price) : "";
     $("#fStock").value = p?.stock ?? 1;
-    $("#fStatus").value = p && isSold(p) ? "sold" : "available";
+    $("#fStatus").value = p ? (p.status === "temp_sold" ? "temp_sold" : (isSold(p) ? "sold" : "available")) : "available";
     $("#fBadge").value = p?.badge || "";
 
     setPreview1(p?.image || "");
@@ -472,13 +473,18 @@
     e.preventDefault();
     if (!formImage) { toast("Hãy chọn ảnh chính (Ảnh 1) cho card"); return; }
     const btn = $("#pForm button[type=submit]");
+    const fStatusVal = $("#fStatus").value;
     let stock = Math.max(0, parseInt($("#fStock").value, 10) || 0);
-    if ($("#fStatus").value === "sold") stock = 0;
+    if (fStatusVal === "sold" || fStatusVal === "temp_sold") stock = 0;
+    let status;
+    if (fStatusVal === "temp_sold") status = "temp_sold";
+    else if (stock === 0) status = "sold";
+    else status = "available";
     const data = {
       name: $("#fName").value.trim(),
       price: moneyVal($("#fPrice").value),
       stock,
-      status: stock === 0 ? "sold" : "available",
+      status,
       badge: $("#fBadge").value.trim(),
     };
     btn.disabled = true; btn.textContent = "Đang lưu…";
