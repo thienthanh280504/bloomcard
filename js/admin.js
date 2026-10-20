@@ -234,14 +234,28 @@
     el.textContent = src ? src.textContent : "";
   }
   const isSold = (p) => p.status === "sold" || (Number(p.stock) || 0) <= 0;
+  const isTempOut = (p) => p.status === "temp_out";
+  const isUnavailable = (p) => isSold(p) || isTempOut(p);
+  function statusLabel(p) {
+    if (isTempOut(p)) return "Tạm hết";
+    if (isSold(p)) return "Đã bán";
+    return "Còn hàng";
+  }
+  function statusPillClass(p) {
+    if (isTempOut(p)) return "pill--temp-out";
+    if (isSold(p)) return "pill--sold";
+    return "";
+  }
   function summary() {
     const allCount = products.length;
-    const availableCount = products.filter((p) => !isSold(p)).length;
-    const soldCount = products.filter((p) => isSold(p)).length;
+    const availableCount = products.filter((p) => !isUnavailable(p)).length;
+    const tempOutCount = products.filter((p) => isTempOut(p)).length;
+    const soldCount = products.filter((p) => isSold(p) && !isTempOut(p)).length;
     $("#pSummary").textContent = `${allCount} card · ${availableCount} còn hàng`;
     syncMtopSub();
     if ($("#pCountAll")) $("#pCountAll").textContent = allCount;
     if ($("#pCountAvailable")) $("#pCountAvailable").textContent = availableCount;
+    if ($("#pCountTempOut")) $("#pCountTempOut").textContent = tempOutCount;
     if ($("#pCountSold")) $("#pCountSold").textContent = soldCount;
   }
   let currentProductFilter = "all";
@@ -251,23 +265,26 @@
 
     const filtered = products.filter((p) => {
       if (q && !(p.name || "").toLowerCase().includes(q)) return false;
-      if (currentProductFilter === "available" && isSold(p)) return false;
-      if (currentProductFilter === "sold" && !isSold(p)) return false;
+      if (currentProductFilter === "available" && isUnavailable(p)) return false;
+      if (currentProductFilter === "temp_out" && !isTempOut(p)) return false;
+      if (currentProductFilter === "sold" && (!isSold(p) || isTempOut(p))) return false;
       return true;
     });
     const empty = !filtered.length;
     $("#productEmpty").hidden = !empty;
-    // Sắp xếp: còn hàng lên trên, đã bán xuống dưới
+    // Sắp xếp: còn hàng lên trên, tạm hết ở giữa, đã bán xuống dưới
     filtered.sort((a, b) => {
-      const aSold = isSold(a) ? 1 : 0;
-      const bSold = isSold(b) ? 1 : 0;
-      return aSold - bSold;
+      const aOrder = isSold(a) && !isTempOut(a) ? 2 : isTempOut(a) ? 1 : 0;
+      const bOrder = isSold(b) && !isTempOut(b) ? 2 : isTempOut(b) ? 1 : 0;
+      return aOrder - bOrder;
     });
     $("#productList").innerHTML = filtered
       .map((p) => {
         const sold = isSold(p);
+        const tempOut = isTempOut(p);
+        const rowClass = sold && !tempOut ? "is-sold" : tempOut ? "is-temp-out" : "";
         return `
-        <article class="pitem ${sold ? "is-sold" : ""}" data-id="${esc(p.id)}">
+        <article class="pitem ${rowClass}" data-id="${esc(p.id)}">
           <img class="pitem__img" src="${esc(asset(p.image || "images/favicon.svg"))}" alt="" loading="lazy" />
           <div class="pitem__info">
             <div class="pitem__name-wrap">
@@ -276,7 +293,7 @@
             </div>
             <div class="pitem__meta">
               <b class="pitem__price">${fmt(p.price)}</b>
-              <span class="pill pill--status ${sold ? "pill--sold" : ""}">${sold ? "Đã bán" : "Còn hàng"}</span>
+              <span class="pill pill--status ${statusPillClass(p)}">${statusLabel(p)}</span>
               <span class="pill pill--sl">SL: ${sold ? 0 : p.stock}</span>
             </div>
           </div>
@@ -307,11 +324,15 @@
   const stockTimers = {};
   function patchRow(row, p) {
     const sold = isSold(p);
-    row.classList.toggle("is-sold", sold);
+    const tempOut = isTempOut(p);
+    row.classList.toggle("is-sold", sold && !tempOut);
+    row.classList.toggle("is-temp-out", tempOut);
     const pill = row.querySelector(".pill--status") || row.querySelector(".pill");
     if (pill) {
-      pill.textContent = sold ? "Đã bán" : "Còn hàng";
-      pill.classList.toggle("pill--sold", sold);
+      pill.textContent = statusLabel(p);
+      pill.classList.remove("pill--sold", "pill--temp-out");
+      const cls = statusPillClass(p);
+      if (cls) pill.classList.add(cls);
     }
     const sl = row.querySelector(".pill--sl");
     if (sl) {
@@ -331,8 +352,13 @@
       const prevSold = isSold(p);
       p.stock = Math.max(0, (Number(p.stock) || 0) + (act === "plus" ? 1 : -1));
       p.status = p.stock === 0 ? "sold" : "available";
+      let badgeChanged = false;
+      if (p.stock > 0 && /^(tạm\s*sold|sold|đã\s*bán|hết\s*hàng)$/i.test((p.badge || "").trim())) {
+        p.badge = "";
+        badgeChanged = true;
+      }
       const nowSold = isSold(p);
-      if (currentProductFilter !== "all" && prevSold !== nowSold) {
+      if ((currentProductFilter !== "all" && prevSold !== nowSold) || badgeChanged) {
         renderProducts();
       } else {
         patchRow(row, p);
@@ -340,7 +366,7 @@
       setSave("busy");
       clearTimeout(stockTimers[p.id]);
       stockTimers[p.id] = setTimeout(() => {
-        run(async () => must(await sb.from("products").update({ stock: p.stock, status: p.status }).eq("id", p.id)));
+        run(async () => must(await sb.from("products").update({ stock: p.stock, status: p.status, badge: p.badge || "" }).eq("id", p.id)));
       }, 500);
       return;
     }
@@ -414,7 +440,7 @@
     $("#fName").value = p?.name || "";
     $("#fPrice").value = p ? moneyFmt(p.price) : "";
     $("#fStock").value = p?.stock ?? 1;
-    $("#fStatus").value = p && isSold(p) ? "sold" : "available";
+    $("#fStatus").value = p ? (p.status === "temp_out" ? "temp_out" : isSold(p) ? "sold" : "available") : "available";
     $("#fBadge").value = p?.badge || "";
 
     setPreview1(p?.image || "");
@@ -468,18 +494,68 @@
     e.target.value = "";
   });
 
+  // Đồng bộ giữa Tình trạng và Số lượng trong form sản phẩm
+  $("#fStatus")?.addEventListener("change", () => {
+    const val = $("#fStatus").value;
+    const curStock = parseInt($("#fStock").value, 10) || 0;
+    if (val === "available") {
+      if (curStock <= 0) $("#fStock").value = 1;
+      const curBadge = ($("#fBadge").value || "").trim();
+      if (/^(tạm\s*sold|sold|đã\s*bán|hết\s*hàng|tạm\s*hết)$/i.test(curBadge)) {
+        $("#fBadge").value = "";
+      }
+    } else if (val === "temp_out") {
+      // Tạm hết: stock giữ nguyên 0 (không bán được)
+      $("#fStock").value = 0;
+    } else {
+      $("#fStock").value = 0;
+    }
+  });
+
+  $("#fStock")?.addEventListener("input", () => {
+    const raw = ($("#fStock").value || "").trim();
+    if (raw === "") return;
+    const val = parseInt(raw, 10);
+    if (!isNaN(val)) {
+      if (val > 0) {
+        $("#fStatus").value = "available";
+        const curBadge = ($("#fBadge").value || "").trim();
+        if (/^(tạm\s*sold|sold|đã\s*bán|hết\s*hàng|tạm\s*hết)$/i.test(curBadge)) {
+          $("#fBadge").value = "";
+        }
+      } else if ($("#fStatus").value === "available") {
+        // Chỉ tự chuyển sang sold nếu đang ở available, không ghi đè temp_out
+        $("#fStatus").value = "sold";
+      }
+    }
+  });
+
   $("#pForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!formImage) { toast("Hãy chọn ảnh chính (Ảnh 1) cho card"); return; }
     const btn = $("#pForm button[type=submit]");
+    const statusVal = $("#fStatus").value;
     let stock = Math.max(0, parseInt($("#fStock").value, 10) || 0);
-    if ($("#fStatus").value === "sold") stock = 0;
+    let badge = ($("#fBadge").value || "").trim();
+
+    if (statusVal === "available") {
+      // Khi chọn Còn hàng thì số lượng phải ít nhất là 1
+      if (stock <= 0) stock = 1;
+      if (/^(tạm\s*sold|sold|đã\s*bán|hết\s*hàng|tạm\s*hết)$/i.test(badge)) {
+        badge = "";
+      }
+    } else if (statusVal === "temp_out") {
+      stock = 0;
+    } else {
+      stock = 0;
+    }
+
     const data = {
       name: $("#fName").value.trim(),
       price: moneyVal($("#fPrice").value),
       stock,
-      status: stock === 0 ? "sold" : "available",
-      badge: $("#fBadge").value.trim(),
+      status: statusVal === "temp_out" ? "temp_out" : (stock === 0 ? "sold" : statusVal),
+      badge,
     };
     btn.disabled = true; btn.textContent = "Đang lưu…";
     try {

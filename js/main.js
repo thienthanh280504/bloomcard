@@ -19,27 +19,41 @@
 
     // Đẩy sản phẩm chưa bán lên trên, sản phẩm đã bán xuống cuối
     const sorted = [...list].sort((a, b) => {
-      const aSold = (a.status === "sold" || (a.stock !== undefined && a.stock <= 0)) ? 1 : 0;
-      const bSold = (b.status === "sold" || (b.stock !== undefined && b.stock <= 0)) ? 1 : 0;
-      return aSold - bSold;
+      const aOrder = a.status === "sold" ? 2 : a.status === "temp_out" ? 1 : (a.stock !== undefined && a.stock <= 0) ? 2 : 0;
+      const bOrder = b.status === "sold" ? 2 : b.status === "temp_out" ? 1 : (b.stock !== undefined && b.stock <= 0) ? 2 : 0;
+      return aOrder - bOrder;
     });
 
     grid.innerHTML = sorted.map((p) => {
       const sold = p.status === "sold" || (p.stock !== undefined && p.stock <= 0);
-      const stock = sold ? 0 : (p.stock ?? 1);
+      const tempOut = p.status === "temp_out";
+      const stock = (sold || tempOut) ? 0 : (p.stock ?? 1);
       const hasImage2 = Boolean(p.image2);
       const hasVideo = Boolean(p.video);
 
       const badgesHtml = `
         <div class="product__badges">
-          ${sold
+          ${sold && !tempOut
             ? `<span class="product__badge product__badge--sold">Đã bán</span>`
-            : p.badge ? `<span class="product__badge">${esc(p.badge)}</span>` : ""}
+            : tempOut
+              ? `<span class="product__badge product__badge--temp-out">Tạm hết</span>`
+              : p.badge ? `<span class="product__badge">${esc(p.badge)}</span>` : ""}
         </div>
       `;
 
+      const articleClass = sold && !tempOut ? "is-sold" : tempOut ? "is-temp-out" : "";
+
+      let buyBtnContent;
+      if (sold && !tempOut) {
+        buyBtnContent = "Đã bán";
+      } else if (tempOut) {
+        buyBtnContent = "Tạm hết";
+      } else {
+        buyBtnContent = `<span>Mua ngay</span><svg class="arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+      }
+
       return `
-        <article class="product ${sold ? "is-sold" : ""}" data-id="${p.id}">
+        <article class="product ${articleClass}" data-id="${p.id}">
           <div class="product__img" data-product-id="${p.id}" data-zoom="${p.images[0] || ""}">
             ${badgesHtml}
             <img class="img-front" src="${p.images[0] || ""}" alt="${esc(p.name)}" loading="lazy" />
@@ -53,7 +67,7 @@
                 <span class="stock">SL: ${stock}</span>
               </div>
               <a href="#" class="product__buy js-add-cart" data-product="${p.id}">
-                ${sold ? "Đã bán" : `<span>Mua ngay</span><svg class="arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`}
+                ${buyBtnContent}
               </a>
             </div>
           </div>
@@ -71,8 +85,8 @@
 
     const p = findProduct(btn.dataset.product);
     if (!p) return;
-    if (p.status === "sold" || (p.stock !== undefined && p.stock <= 0)) {
-      toast("Sản phẩm này hiện đã bán hết!");
+    if (p.status === "sold" || p.status === "temp_out" || (p.stock !== undefined && p.stock <= 0)) {
+      toast(p.status === "temp_out" ? "Sản phẩm này hiện tạm hết!" : "Sản phẩm này hiện đã bán hết!");
       return;
     }
 
@@ -327,7 +341,7 @@
   function applyFilters() {
     const q = normalize(filter.q.trim());
     const list = PRODUCTS.filter((p) => {
-      if (filter.inStock && p.status === "sold") return false;
+      if (filter.inStock && (p.status === "sold" || p.status === "temp_out")) return false;
       if (q && !normalize(p.name).includes(q)) return false;
       return true;
     });
@@ -544,9 +558,9 @@
     if (grid) grid.classList.add("is-loading");
     await (window.DATA_READY || Promise.resolve());
     PRODUCTS = (window.PRODUCTS || []).sort((a, b) => {
-      const aSold = (a.status === "sold" || (a.stock !== undefined && a.stock <= 0)) ? 1 : 0;
-      const bSold = (b.status === "sold" || (b.stock !== undefined && b.stock <= 0)) ? 1 : 0;
-      return aSold - bSold;
+      const aOrder = a.status === "sold" ? 2 : a.status === "temp_out" ? 1 : (a.stock !== undefined && a.stock <= 0) ? 2 : 0;
+      const bOrder = b.status === "sold" ? 2 : b.status === "temp_out" ? 1 : (b.stock !== undefined && b.stock <= 0) ? 2 : 0;
+      return aOrder - bOrder;
     });
     if (grid) grid.classList.remove("is-loading");
     initProductSlider();
